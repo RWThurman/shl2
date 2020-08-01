@@ -22,8 +22,8 @@ void UOWSAbilityTask_PlayMontageWait::OnMontageBlendingOut(UAnimMontage* Montage
 
 			// Reset AnimRootMotionTranslationScale
 			ACharacter* Character = Cast<ACharacter>(GetAvatarActor());
-			if (Character && (Character->Role == ROLE_Authority ||
-				(Character->Role == ROLE_AutonomousProxy && Ability->GetNetExecutionPolicy() == EGameplayAbilityNetExecutionPolicy::LocalPredicted)))
+			if (Character && (Character->GetLocalRole() == ROLE_Authority ||
+				(Character->GetLocalRole() == ROLE_AutonomousProxy && Ability->GetNetExecutionPolicy() == EGameplayAbilityNetExecutionPolicy::LocalPredicted)))
 			{
 				Character->SetAnimRootMotionTranslationScale(1.f);
 			}
@@ -126,8 +126,8 @@ void UOWSAbilityTask_PlayMontageWait::Activate()
 				}
 
 				ACharacter* Character = Cast<ACharacter>(GetAvatarActor());
-				if (Character && (Character->Role == ROLE_Authority ||
-					(Character->Role == ROLE_AutonomousProxy && Ability->GetNetExecutionPolicy() == EGameplayAbilityNetExecutionPolicy::LocalPredicted)))
+				if (Character && (Character->GetLocalRole() == ROLE_Authority ||
+					(Character->GetLocalRole() == ROLE_AutonomousProxy && Ability->GetNetExecutionPolicy() == EGameplayAbilityNetExecutionPolicy::LocalPredicted)))
 				{
 					Character->SetAnimRootMotionTranslationScale(AnimRootMotionTranslationScale);
 				}

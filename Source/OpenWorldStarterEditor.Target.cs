@@ -9,5 +9,6 @@ public class OpenWorldStarterEditorTarget : TargetRules
 	{
 		Type = TargetType.Editor;
         ExtraModuleNames.AddRange(new string[] { "OpenWorldStarter" });
+        //DefaultBuildSettings = BuildSettingsVersion.V2;
     }
 }

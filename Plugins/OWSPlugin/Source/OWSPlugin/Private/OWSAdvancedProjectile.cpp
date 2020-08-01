@@ -65,7 +65,7 @@ AOWSAdvancedProjectile::AOWSAdvancedProjectile(const class FObjectInitializer& O
 	SetReplicates(true);
 	bNetTemporary = true;
 
-	bReplicateMovement = false;
+	SetReplicatingMovement(false);
 	bFakeClientProjectile = false;
 	bMoveFakeToReplicatedPos = true;
 	
@@ -85,9 +85,9 @@ void AOWSAdvancedProjectile::PreInitializeComponents()
 
 	Super::PreInitializeComponents();
 
-	if (Instigator != NULL)
+	if (GetInstigator() != NULL)
 	{
-		InstigatorController = Instigator->Controller;
+		InstigatorController = GetInstigator()->Controller;
 	}
 
 	if (PawnOverlapSphere != NULL)
@@ -123,14 +123,14 @@ void AOWSAdvancedProjectile::PreInitializeComponents()
 
 void AOWSAdvancedProjectile::OnRep_Instigator()
 {
-	if (Instigator != NULL)
+	if (GetInstigator() != NULL)
 	{
 		//InstigatorTeamNum = GetTeamNum(); // this checks Instigator first
 
-		InstigatorController = Instigator->Controller;
-		if (Cast<AOWSAdvancedProjectile>(Instigator))
+		InstigatorController = GetInstigator()->Controller;
+		if (Cast<AOWSAdvancedProjectile>(GetInstigator()))
 		{
-			((AOWSCharacterWithAbilities*)(Instigator))->LastFiredProjectile = this;
+			((AOWSCharacterWithAbilities*)(GetInstigator()))->LastFiredProjectile = this;
 		}
 	}
 }
@@ -156,7 +156,7 @@ void AOWSAdvancedProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	bHasSpawnedFully = true;
-	if (Role == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		UE_LOG(OWS, Verbose, TEXT("%s: BeginPlay: Projectile Auth BeginPlay: %s"), *ServerOrClient, *GetName());
 
@@ -345,8 +345,13 @@ void AOWSAdvancedProjectile::BeginFakeProjectileSynch(AOWSAdvancedProjectile* In
 
 	if (bMoveFakeToReplicatedPos)
 	{
-		MyFakeProjectile->ReplicatedMovement.Location = GetActorLocation();
-		MyFakeProjectile->ReplicatedMovement.Rotation = GetActorRotation();
+		FRepMovement RepMovement;
+		RepMovement.Location = GetActorLocation();
+		RepMovement.Rotation = GetActorRotation();
+
+		//MyFakeProjectile->ReplicatedMovement.Location = GetActorLocation();
+		//MyFakeProjectile->ReplicatedMovement.Rotation = GetActorRotation();
+		MyFakeProjectile->SetReplicatedMovement(RepMovement);
 		MyFakeProjectile->PostNetReceiveLocationAndRotation();
 
 		UE_LOG(OWS, Verbose, TEXT("%s: BeginFakeProjectileSynch: Move Fake To Replicated Pos: %s"), *ServerOrClient, *GetNameSafe(this));
@@ -355,8 +360,13 @@ void AOWSAdvancedProjectile::BeginFakeProjectileSynch(AOWSAdvancedProjectile* In
 	{
 		UE_LOG(OWS, Verbose, TEXT("%S: BeginFakeProjectileSynch: Move Replicated To Fake Pos: %s"), *ServerOrClient, *GetNameSafe(this));
 
-		ReplicatedMovement.Location = MyFakeProjectile->GetActorLocation();
-		ReplicatedMovement.Rotation = MyFakeProjectile->GetActorRotation();
+		FRepMovement RepMovement;
+		RepMovement.Location = MyFakeProjectile->GetActorLocation();
+		RepMovement.Rotation = MyFakeProjectile->GetActorRotation();
+
+		//ReplicatedMovement.Location = MyFakeProjectile->GetActorLocation();
+		//ReplicatedMovement.Rotation = MyFakeProjectile->GetActorRotation();
+		MyFakeProjectile->SetReplicatedMovement(RepMovement);
 		PostNetReceiveLocationAndRotation();
 	}
 
@@ -402,7 +412,7 @@ void AOWSAdvancedProjectile::BeginFakeProjectileSynch(AOWSAdvancedProjectile* In
 
 void AOWSAdvancedProjectile::PreReplication(IRepChangedPropertyTracker & ChangedPropertyTracker)
 {
-	if ((bForceNextRepMovement || bReplicateUTMovement) && (Role == ROLE_Authority))
+	if ((bForceNextRepMovement || bReplicateUTMovement) && (GetLocalRole() == ROLE_Authority))
 	{
 		GatherCurrentMovement();
 		bForceNextRepMovement = false;
@@ -439,15 +449,19 @@ void AOWSAdvancedProjectile::GatherCurrentMovement()
 
 void AOWSAdvancedProjectile::OnRep_UTProjReplicatedMovement()
 {
-	if (Role == ROLE_SimulatedProxy)
+	if (GetLocalRole() == ROLE_SimulatedProxy)
 	{
 		//ReplicatedAccel = UTReplicatedMovement.Acceleration;
-		ReplicatedMovement.Location = UTProjReplicatedMovement.Location;
-		ReplicatedMovement.Rotation = UTProjReplicatedMovement.Rotation;
-		ReplicatedMovement.LinearVelocity = UTProjReplicatedMovement.LinearVelocity;
-		ReplicatedMovement.AngularVelocity = FVector(0.f);
-		ReplicatedMovement.bSimulatedPhysicSleep = false;
-		ReplicatedMovement.bRepPhysics = false;
+		FRepMovement tempRepMovement;
+
+		tempRepMovement.Location = UTProjReplicatedMovement.Location;
+		tempRepMovement.Rotation = UTProjReplicatedMovement.Rotation;
+		tempRepMovement.LinearVelocity = UTProjReplicatedMovement.LinearVelocity;
+		tempRepMovement.AngularVelocity = FVector(0.f);
+		tempRepMovement.bSimulatedPhysicSleep = false;
+		tempRepMovement.bRepPhysics = false;
+
+		SetReplicatedMovement(tempRepMovement);
 
 		OnRep_ReplicatedMovement();
 	}
@@ -471,9 +485,13 @@ void AOWSAdvancedProjectile::PostNetReceiveLocationAndRotation()
 	{
 		// use fake proj position
 		UE_LOG(OWS, Verbose, TEXT("%s PostNetReceiveLocationAndRotation: Use Fake Proj Position: %s"), *ServerOrClient, *GetNameSafe(this));
+
+		FRepMovement tempRepMovement;
 		
-		ReplicatedMovement.Location = MyFakeProjectile->GetActorLocation();
-		ReplicatedMovement.Rotation = MyFakeProjectile->GetActorRotation();
+		tempRepMovement.Location = MyFakeProjectile->GetActorLocation();
+		tempRepMovement.Rotation = MyFakeProjectile->GetActorRotation();
+
+		SetReplicatedMovement(tempRepMovement);
 	}
 
 	Super::PostNetReceiveLocationAndRotation();
@@ -511,11 +529,15 @@ void AOWSAdvancedProjectile::PostNetReceiveLocationAndRotation()
 	{
 		UE_LOG(OWS, Verbose, TEXT("%s PostNetReceiveLocationAndRotation: MyFakeProjectile: %s"), *ServerOrClient, *GetNameSafe(this));
 
-		MyFakeProjectile->ReplicatedMovement.Location = GetActorLocation();
-		MyFakeProjectile->ReplicatedMovement.Rotation = GetActorRotation();
+		FRepMovement tempRepMovement;
+
+		tempRepMovement.Location = GetActorLocation();
+		tempRepMovement.Rotation = GetActorRotation();
+
+		MyFakeProjectile->SetReplicatedMovement(tempRepMovement);
 		MyFakeProjectile->PostNetReceiveLocationAndRotation();
 	}
-	else if (Role != ROLE_Authority)
+	else if (GetLocalRole() != ROLE_Authority)
 	{
 		UE_LOG(OWS, Verbose, TEXT("%s PostNetReceiveLocationAndRotation: Tick Particle Systems: %s"), *ServerOrClient, *GetNameSafe(this));
 
@@ -550,7 +572,7 @@ void AOWSAdvancedProjectile::PostNetReceiveVelocity(const FVector& NewVelocity)
 
 void AOWSAdvancedProjectile::Destroyed()
 {
-	if (Role == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		UE_LOG(OWS, Verbose, TEXT("Destroyed: Server Destroyed: %s"), *GetNameSafe(this));
 	}
@@ -647,15 +669,15 @@ void AOWSAdvancedProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedCompo
 		return;
 
 	//Don't overlap if you are the simulated proxy replicated one time from server to client for synch-up
-	if (this->Role == ROLE_SimulatedProxy)
+	if (this->GetLocalRole() == ROLE_SimulatedProxy)
 		return;
 
 	//Don't overlap if OtherActor is the simulated proxy replicated one time from server to client for synch-up
-	if (OtherActor->IsA(AOWSAdvancedProjectile::StaticClass()) && OtherActor->Role == ROLE_SimulatedProxy)
+	if (OtherActor->IsA(AOWSAdvancedProjectile::StaticClass()) && OtherActor->GetLocalRole() == ROLE_SimulatedProxy)
 		return;
 
 	//Don't hit the instigator of this projectile
-	if (OtherActor == Instigator)
+	if (OtherActor == GetInstigator())
 		return;
 
 	if (!bInOverlap)
@@ -735,13 +757,13 @@ bool AOWSAdvancedProjectile::ShouldIgnoreHit_Implementation(AActor* OtherActor, 
 
 	return Cast<AVolume>(OtherActor) != NULL
 		|| Cast<AOWSAdvancedProjectile>(OtherActor) != NULL
-		|| ((Role != ROLE_Authority) && OtherActor && OtherActor->GetTearOff());
+		|| ((GetLocalRole() != ROLE_Authority) && OtherActor && OtherActor->GetTearOff());
 }
 
 void AOWSAdvancedProjectile::ProcessHit_Implementation(AActor* OtherActor, UPrimitiveComponent* OtherComp, const FHitResult& Hit)
 {
 	//Hidden is the same as destroyed, so don't process hits
-	if (bHidden)
+	if (IsHidden())
 		return;
 
 	//If this projectile has already exploded, stop processing hits
@@ -751,13 +773,13 @@ void AOWSAdvancedProjectile::ProcessHit_Implementation(AActor* OtherActor, UPrim
 	UE_LOG(OWS, Verbose, TEXT("ProcessHit_Implementation: %s::ProcessHit fake %d has master %d has fake %d OtherActor:%s"), *GetNameSafe(this), bFakeClientProjectile, (MasterProjectile != NULL), (MyFakeProjectile != NULL), OtherActor ? *OtherActor->GetName() : TEXT("NULL"));
 	
 	// note: on clients we assume spawn time impact is invalid since in such a case the projectile would generally have not survived to be replicated at all
-	if (OtherActor != this && (OtherActor != Instigator || Instigator == NULL /*|| bCanHitInstigator*/) && OtherComp != NULL && !bExploded && (Role == ROLE_Authority || bHasSpawnedFully))
+	if (OtherActor != this && (OtherActor != GetInstigator() || GetInstigator() == NULL /*|| bCanHitInstigator*/) && OtherComp != NULL && !bExploded && (GetLocalRole() == ROLE_Authority || bHasSpawnedFully))
 	{
 		//DamageImpactedActor(OtherActor, OtherComp, HitLocation, HitNormal);
 
 		if (ShouldIgnoreHit(OtherActor, OtherComp))
 		{
-			if ((Role != ROLE_Authority) && OtherActor && OtherActor->GetTearOff())
+			if ((GetLocalRole() != ROLE_Authority) && OtherActor && OtherActor->GetTearOff())
 			{
 				DamageImpactedActor(OtherActor, OtherComp, Hit);
 			}
@@ -806,7 +828,7 @@ void AOWSAdvancedProjectile::ProcessHit_Implementation(AActor* OtherActor, UPrim
 
 void AOWSAdvancedProjectile::Explode_Implementation(const FHitResult& Hit, UPrimitiveComponent* HitComp)
 {
-	if (Role == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		UE_LOG(OWS, Verbose, TEXT("Explode_Implementation: Server: Explode! %s"), *GetNameSafe(this));
 	}
@@ -825,7 +847,7 @@ void AOWSAdvancedProjectile::Explode_Implementation(const FHitResult& Hit, UPrim
 	//Play gameplay cue for explosion if there is one
 	if (ExplosionGameplayCueTag.IsValid())
 	{
-		AOWSCharacterWithAbilities* MyCharacter = Cast<AOWSCharacterWithAbilities>(Instigator);
+		AOWSCharacterWithAbilities* MyCharacter = Cast<AOWSCharacterWithAbilities>(GetInstigator());
 		if (MyCharacter)
 		{
 			FGameplayCueParameters CueParams;
@@ -858,7 +880,7 @@ void AOWSAdvancedProjectile::Explode_Implementation(const FHitResult& Hit, UPrim
 		UE_LOG(OWS, Verbose, TEXT("ActivateAbilityTagOnImpact Activated on Server Only: %s"), *ActivateAbilityTagOnImpact.ToString());
 		//FScopedPredictionWindow NewScopedWindow(GetAbilitySystemComponent(), true);
 		//GetAbilitySystemComponent()->HandleGameplayEvent(Projectile->ActivateAbilityTagOnImpact, &Payload);
-		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Instigator, ActivateAbilityTagOnImpact, Payload);
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetInstigator(), ActivateAbilityTagOnImpact, Payload);
 	}
 
 	TArray<FOverlapResult> OverlapResults;
@@ -867,7 +889,7 @@ void AOWSAdvancedProjectile::Explode_Implementation(const FHitResult& Hit, UPrim
 
 	CollisionObjectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Pawn);
 
-	QueryParams.AddIgnoredActor(Instigator);
+	QueryParams.AddIgnoredActor(GetInstigator());
 
 	GetWorld()->OverlapMultiByObjectType(OverlapResults, Hit.Location, FQuat(0,0,0,0), CollisionObjectQueryParams, FCollisionShape::MakeSphere(ExplosionDamageRadius), QueryParams);
 
@@ -893,7 +915,7 @@ void AOWSAdvancedProjectile::DamageImpactedActor_Implementation(AActor* OtherAct
 		return;
 	}	
 
-	if (Role == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		UE_LOG(OWS, Verbose, TEXT("Server: DamageImpactedActor_Implementation! %s"), *GetNameSafe(this));
 	}
@@ -916,7 +938,7 @@ void AOWSAdvancedProjectile::DamageImpactedActor_Implementation(AActor* OtherAct
 
 
 	//We use the InstigatorCharacter because if we use the Hit Character we won't have an owning connecto RPC up the prediction key.
-	AOWSCharacterWithAbilities* InstigatorCharacter = CastChecked<AOWSCharacterWithAbilities>(Instigator);
+	AOWSCharacterWithAbilities* InstigatorCharacter = CastChecked<AOWSCharacterWithAbilities>(GetInstigator());
 
 	if (InstigatorCharacter && !InstigatorCharacter->IsPendingKill())
 	{
@@ -1046,14 +1068,14 @@ void AOWSAdvancedProjectile::GetLifetimeReplicatedProps(TArray<class FLifetimePr
 		BPClass->GetLifetimeBlueprintReplicationList(OutLifetimeProps);
 	}
 
-	DOREPLIFETIME(AActor, bHidden);
+	//DOREPLIFETIME(AActor, IsHidden());
 	//DOREPLIFETIME(AActor, bTearOff);
-	DOREPLIFETIME(AActor, bCanBeDamaged);
+	//DOREPLIFETIME(AActor, CanBeDamaged());
 
 	// POLGE TODO: Fix the issues with this being private
 	//DOREPLIFETIME(AActor, AttachmentReplication);
 
-	DOREPLIFETIME(AActor, Instigator);
+	//DOREPLIFETIME(AActor, GetInstigator());
 	DOREPLIFETIME_CONDITION(AOWSAdvancedProjectile, UTProjReplicatedMovement, COND_SimulatedOrPhysics);
 	//DOREPLIFETIME_CONDITION(AOWSAdvancedProjectile, ProjectilePredictionKey, COND_OwnerOnly);
 

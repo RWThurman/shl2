@@ -123,52 +123,77 @@ UMaterialInstance* UOWSGameInstance::LoadMaterialInstanceFromPath(FString Materi
 	return tempMaterial;
 }
 
-/*
-FString UOWSGameInstance::EncryptWithAES(FString InputString)
+FString UOWSGameInstance::EncryptWithAES(FString StringToEncrypt, FString Key)
 {
-	int32 Size = InputString.Len(); // Calculates length of the input string
+	if (StringToEncrypt.IsEmpty()) return "";
+	if (Key.IsEmpty()) return "";
 
-	TCHAR *String = InputString.GetCharArray().GetData();    // Turn input string...
-	uint8* BytesString = (uint8*)(String);                    // ...into byte array
+	FString SplitSymbol = "OWS#@!";
+	StringToEncrypt.Append(SplitSymbol);
 
-	FString Key = "FF82B5451E21C090AE76622AAF24BCB0";                                            // Choose a key then...
-	TCHAR *KeyTChar = Key.GetCharArray().GetData();            // ...turn key string...
-	ANSICHAR *KeyAnsi = (ANSICHAR*)TCHAR_TO_ANSI(KeyTChar); // ...into ANSICHAR array.
-
-	FAES::EncryptData(BytesString, Size, KeyAnsi); // encrypt.
-
-	TArray<uint8> EncryptedByteArray;                        // Define a new array to store the output data
-	EncryptedByteArray.Append(BytesString, Size);            // Move output of the FAES functions to this array
-	FString output = FBase64::Encode(EncryptedByteArray);    // Turn array into FString
-	return output;
-}
-
-FString UOWSGameInstance::DecryptWithAES(FString InputString)
-{
-	int32 Size = InputString.Len(); // Calculates length of the input string
-
-	TCHAR *String = InputString.GetCharArray().GetData();    // Turn input string...
-	uint8* BytesString = (uint8*)(String);                    // ...into byte array
-
-	FString Key = "FF82B5451E21C090AE76622AAF24BCB0";                                            // Choose a key then...
-	TCHAR *KeyTChar = Key.GetCharArray().GetData();            // ...turn key string...
+	Key = FMD5::HashAnsiString(*Key);
+	TCHAR *KeyTChar = Key.GetCharArray().GetData();
 	ANSICHAR *KeyAnsi = (ANSICHAR*)TCHAR_TO_ANSI(KeyTChar);
 
-	FAES::DecryptData(BytesString, Size, KeyAnsi); // Decrypt or...
+	uint32 Size = StringToEncrypt.Len();
+	Size = Size + (FAES::AESBlockSize - (Size % FAES::AESBlockSize));
 
-	TArray<uint8> EncryptedByteArray;                        // Define a new array to store the output data
-	EncryptedByteArray.Append(BytesString, Size);            // Move output of the FAES functions to this array
-	FString output = FBase64::Encode(EncryptedByteArray);    // Turn array into FString
-	return output;
+	uint8* ByteString = new uint8[Size];
+
+	if (StringToBytes(StringToEncrypt, ByteString, Size)) {
+
+		FAES::EncryptData(ByteString, Size, KeyAnsi);
+		StringToEncrypt = FString::FromHexBlob(ByteString, Size);
+
+		delete ByteString;
+		return StringToEncrypt;
+	}
+
+	delete ByteString;
+	return "";
 }
-*/
+
+FString UOWSGameInstance::DecryptWithAES(FString StringToDecrypt, FString Key)
+{
+	if (StringToDecrypt.IsEmpty()) return "";
+	if (Key.IsEmpty()) return "";
+
+	FString SplitSymbol = "OWS#@!";
+
+	Key = FMD5::HashAnsiString(*Key);
+	TCHAR *KeyTChar = Key.GetCharArray().GetData();
+	ANSICHAR *KeyAnsi = (ANSICHAR*)TCHAR_TO_ANSI(KeyTChar);
+
+	uint32 Size = StringToDecrypt.Len();
+	Size = Size + (FAES::AESBlockSize - (Size % FAES::AESBlockSize));
+
+	uint8* ByteString = new uint8[Size];
+
+	if (FString::ToHexBlob(StringToDecrypt, ByteString, Size)) {
+
+		FAES::DecryptData(ByteString, Size, KeyAnsi);
+		StringToDecrypt = BytesToString(ByteString, Size);
+
+		FString LeftPart;
+		FString RightPart;
+		StringToDecrypt.Split(SplitSymbol, &LeftPart, &RightPart, ESearchCase::CaseSensitive, ESearchDir::FromStart);
+		StringToDecrypt = LeftPart;
+
+		delete ByteString;
+		return StringToDecrypt;
+	}
+
+	delete ByteString;
+	return "";
+}
+
 
 FString UOWSGameInstance::SerializeStructToJSONString(const UStruct* StructToSerialize)
 {
 	FString TempOutputString;
-	for (TFieldIterator<UProperty> PropIt(StructToSerialize->GetClass()); PropIt; ++PropIt)
+	for (TFieldIterator<FProperty> PropIt(StructToSerialize->GetClass()); PropIt; ++PropIt)
 	{
-		UProperty* Property = *PropIt;
+		FProperty* Property = *PropIt;
 		TempOutputString += Property->GetNameCPP();
 	}
 

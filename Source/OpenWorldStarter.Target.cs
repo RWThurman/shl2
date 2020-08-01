@@ -9,5 +9,6 @@ public class OpenWorldStarterTarget : TargetRules
 	{
 		Type = TargetType.Game;
         ExtraModuleNames.AddRange(new string[] { "OpenWorldStarter" });
+        //DefaultBuildSettings = BuildSettingsVersion.V2;
     }
 }

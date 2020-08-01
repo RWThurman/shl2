@@ -54,11 +54,12 @@ public:
 
 	/* BEGIN AUTO GENERATED ATTRIBUTES */
 
+	
 	//HitDie
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_HitDie, Category = RPGAttributes)
 		FGameplayAttributeData HitDie;
 	UFUNCTION()
-		void OnRep_HitDie() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, HitDie); }
+		void OnRep_HitDie(const FGameplayAttributeData& OldHitDie) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, HitDie, OldHitDie); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, HitDie)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetHitDie() const
@@ -85,7 +86,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Wounds, Category = RPGAttributes)
 		FGameplayAttributeData Wounds;
 	UFUNCTION()
-		void OnRep_Wounds() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Wounds); }
+		void OnRep_Wounds(const FGameplayAttributeData& OldWounds) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Wounds, OldWounds); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Wounds)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetWounds() const
@@ -112,7 +113,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Thirst, Category = RPGAttributes)
 		FGameplayAttributeData Thirst;
 	UFUNCTION()
-		void OnRep_Thirst() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Thirst); }
+		void OnRep_Thirst(const FGameplayAttributeData& OldThirst) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Thirst, OldThirst); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Thirst)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetThirst() const
@@ -139,7 +140,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Hunger, Category = RPGAttributes)
 		FGameplayAttributeData Hunger;
 	UFUNCTION()
-		void OnRep_Hunger() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Hunger); }
+		void OnRep_Hunger(const FGameplayAttributeData& OldHunger) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Hunger, OldHunger); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Hunger)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetHunger() const
@@ -164,9 +165,9 @@ public:
 
 	//Health
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Health, Category = RPGAttributes, meta = (HideFromModifiers))
-	FGameplayAttributeData Health;
+		FGameplayAttributeData Health;
 	UFUNCTION()
-		void OnRep_Health() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Health); }
+		void OnRep_Health(const FGameplayAttributeData& OldHealth) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Health, OldHealth); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Health)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetHealth() const
@@ -193,7 +194,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_MaxHealth, Category = RPGAttributes)
 		FGameplayAttributeData MaxHealth;
 	UFUNCTION()
-		void OnRep_MaxHealth() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, MaxHealth); }
+		void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, MaxHealth, OldMaxHealth); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, MaxHealth)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetMaxHealth() const
@@ -220,7 +221,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_HealthRegenRate, Category = RPGAttributes)
 		FGameplayAttributeData HealthRegenRate;
 	UFUNCTION()
-		void OnRep_HealthRegenRate() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, HealthRegenRate); }
+		void OnRep_HealthRegenRate(const FGameplayAttributeData& OldHealthRegenRate) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, HealthRegenRate, OldHealthRegenRate); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, HealthRegenRate)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetHealthRegenRate() const
@@ -247,7 +248,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Mana, Category = RPGAttributes)
 		FGameplayAttributeData Mana;
 	UFUNCTION()
-		void OnRep_Mana() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Mana); }
+		void OnRep_Mana(const FGameplayAttributeData& OldMana) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Mana, OldMana); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Mana)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetMana() const
@@ -274,7 +275,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_MaxMana, Category = RPGAttributes)
 		FGameplayAttributeData MaxMana;
 	UFUNCTION()
-		void OnRep_MaxMana() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, MaxMana); }
+		void OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, MaxMana, OldMaxMana); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, MaxMana)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetMaxMana() const
@@ -301,7 +302,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_ManaRegenRate, Category = RPGAttributes)
 		FGameplayAttributeData ManaRegenRate;
 	UFUNCTION()
-		void OnRep_ManaRegenRate() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, ManaRegenRate); }
+		void OnRep_ManaRegenRate(const FGameplayAttributeData& OldManaRegenRate) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, ManaRegenRate, OldManaRegenRate); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, ManaRegenRate)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetManaRegenRate() const
@@ -328,7 +329,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Energy, Category = RPGAttributes)
 		FGameplayAttributeData Energy;
 	UFUNCTION()
-		void OnRep_Energy() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Energy); }
+		void OnRep_Energy(const FGameplayAttributeData& OldEnergy) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Energy, OldEnergy); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Energy)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetEnergy() const
@@ -355,7 +356,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_MaxEnergy, Category = RPGAttributes)
 		FGameplayAttributeData MaxEnergy;
 	UFUNCTION()
-		void OnRep_MaxEnergy() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, MaxEnergy); }
+		void OnRep_MaxEnergy(const FGameplayAttributeData& OldMaxEnergy) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, MaxEnergy, OldMaxEnergy); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, MaxEnergy)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetMaxEnergy() const
@@ -382,7 +383,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_EnergyRegenRate, Category = RPGAttributes)
 		FGameplayAttributeData EnergyRegenRate;
 	UFUNCTION()
-		void OnRep_EnergyRegenRate() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, EnergyRegenRate); }
+		void OnRep_EnergyRegenRate(const FGameplayAttributeData& OldEnergyRegenRate) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, EnergyRegenRate, OldEnergyRegenRate); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, EnergyRegenRate)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetEnergyRegenRate() const
@@ -409,7 +410,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Fatigue, Category = RPGAttributes)
 		FGameplayAttributeData Fatigue;
 	UFUNCTION()
-		void OnRep_Fatigue() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Fatigue); }
+		void OnRep_Fatigue(const FGameplayAttributeData& OldFatigue) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Fatigue, OldFatigue); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Fatigue)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetFatigue() const
@@ -436,7 +437,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_MaxFatigue, Category = RPGAttributes)
 		FGameplayAttributeData MaxFatigue;
 	UFUNCTION()
-		void OnRep_MaxFatigue() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, MaxFatigue); }
+		void OnRep_MaxFatigue(const FGameplayAttributeData& OldMaxFatigue) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, MaxFatigue, OldMaxFatigue); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, MaxFatigue)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetMaxFatigue() const
@@ -463,7 +464,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_FatigueRegenRate, Category = RPGAttributes)
 		FGameplayAttributeData FatigueRegenRate;
 	UFUNCTION()
-		void OnRep_FatigueRegenRate() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, FatigueRegenRate); }
+		void OnRep_FatigueRegenRate(const FGameplayAttributeData& OldFatigueRegenRate) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, FatigueRegenRate, OldFatigueRegenRate); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, FatigueRegenRate)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetFatigueRegenRate() const
@@ -490,7 +491,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Stamina, Category = RPGAttributes)
 		FGameplayAttributeData Stamina;
 	UFUNCTION()
-		void OnRep_Stamina() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Stamina); }
+		void OnRep_Stamina(const FGameplayAttributeData& OldStamina) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Stamina, OldStamina); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Stamina)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetStamina() const
@@ -517,7 +518,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_MaxStamina, Category = RPGAttributes)
 		FGameplayAttributeData MaxStamina;
 	UFUNCTION()
-		void OnRep_MaxStamina() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, MaxStamina); }
+		void OnRep_MaxStamina(const FGameplayAttributeData& OldMaxStamina) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, MaxStamina, OldMaxStamina); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, MaxStamina)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetMaxStamina() const
@@ -544,7 +545,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_StaminaRegenRate, Category = RPGAttributes)
 		FGameplayAttributeData StaminaRegenRate;
 	UFUNCTION()
-		void OnRep_StaminaRegenRate() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, StaminaRegenRate); }
+		void OnRep_StaminaRegenRate(const FGameplayAttributeData& OldStaminaRegenRate) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, StaminaRegenRate, OldStaminaRegenRate); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, StaminaRegenRate)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetStaminaRegenRate() const
@@ -571,7 +572,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Endurance, Category = RPGAttributes)
 		FGameplayAttributeData Endurance;
 	UFUNCTION()
-		void OnRep_Endurance() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Endurance); }
+		void OnRep_Endurance(const FGameplayAttributeData& OldEndurance) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Endurance, OldEndurance); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Endurance)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetEndurance() const
@@ -598,7 +599,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_MaxEndurance, Category = RPGAttributes)
 		FGameplayAttributeData MaxEndurance;
 	UFUNCTION()
-		void OnRep_MaxEndurance() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, MaxEndurance); }
+		void OnRep_MaxEndurance(const FGameplayAttributeData& OldMaxEndurance) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, MaxEndurance, OldMaxEndurance); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, MaxEndurance)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetMaxEndurance() const
@@ -625,7 +626,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_EnduranceRegenRate, Category = RPGAttributes)
 		FGameplayAttributeData EnduranceRegenRate;
 	UFUNCTION()
-		void OnRep_EnduranceRegenRate() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, EnduranceRegenRate); }
+		void OnRep_EnduranceRegenRate(const FGameplayAttributeData& OldEnduranceRegenRate) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, EnduranceRegenRate, OldEnduranceRegenRate); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, EnduranceRegenRate)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetEnduranceRegenRate() const
@@ -652,7 +653,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Strength, Category = RPGAttributes)
 		FGameplayAttributeData Strength;
 	UFUNCTION()
-		void OnRep_Strength() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Strength); }
+		void OnRep_Strength(const FGameplayAttributeData& OldStrength) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Strength, OldStrength); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Strength)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetStrength() const
@@ -679,7 +680,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Dexterity, Category = RPGAttributes)
 		FGameplayAttributeData Dexterity;
 	UFUNCTION()
-		void OnRep_Dexterity() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Dexterity); }
+		void OnRep_Dexterity(const FGameplayAttributeData& OldDexterity) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Dexterity, OldDexterity); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Dexterity)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetDexterity() const
@@ -706,7 +707,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Constitution, Category = RPGAttributes)
 		FGameplayAttributeData Constitution;
 	UFUNCTION()
-		void OnRep_Constitution() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Constitution); }
+		void OnRep_Constitution(const FGameplayAttributeData& OldConstitution) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Constitution, OldConstitution); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Constitution)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetConstitution() const
@@ -733,7 +734,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Intellect, Category = RPGAttributes)
 		FGameplayAttributeData Intellect;
 	UFUNCTION()
-		void OnRep_Intellect() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Intellect); }
+		void OnRep_Intellect(const FGameplayAttributeData& OldIntellect) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Intellect, OldIntellect); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Intellect)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetIntellect() const
@@ -760,7 +761,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Wisdom, Category = RPGAttributes)
 		FGameplayAttributeData Wisdom;
 	UFUNCTION()
-		void OnRep_Wisdom() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Wisdom); }
+		void OnRep_Wisdom(const FGameplayAttributeData& OldWisdom) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Wisdom, OldWisdom); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Wisdom)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetWisdom() const
@@ -787,7 +788,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Charisma, Category = RPGAttributes)
 		FGameplayAttributeData Charisma;
 	UFUNCTION()
-		void OnRep_Charisma() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Charisma); }
+		void OnRep_Charisma(const FGameplayAttributeData& OldCharisma) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Charisma, OldCharisma); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Charisma)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetCharisma() const
@@ -814,7 +815,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Agility, Category = RPGAttributes)
 		FGameplayAttributeData Agility;
 	UFUNCTION()
-		void OnRep_Agility() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Agility); }
+		void OnRep_Agility(const FGameplayAttributeData& OldAgility) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Agility, OldAgility); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Agility)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetAgility() const
@@ -841,7 +842,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Spirit, Category = RPGAttributes)
 		FGameplayAttributeData Spirit;
 	UFUNCTION()
-		void OnRep_Spirit() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Spirit); }
+		void OnRep_Spirit(const FGameplayAttributeData& OldSpirit) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Spirit, OldSpirit); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Spirit)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetSpirit() const
@@ -868,7 +869,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Magic, Category = RPGAttributes)
 		FGameplayAttributeData Magic;
 	UFUNCTION()
-		void OnRep_Magic() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Magic); }
+		void OnRep_Magic(const FGameplayAttributeData& OldMagic) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Magic, OldMagic); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Magic)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetMagic() const
@@ -895,7 +896,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Fortitude, Category = RPGAttributes)
 		FGameplayAttributeData Fortitude;
 	UFUNCTION()
-		void OnRep_Fortitude() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Fortitude); }
+		void OnRep_Fortitude(const FGameplayAttributeData& OldFortitude) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Fortitude, OldFortitude); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Fortitude)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetFortitude() const
@@ -922,7 +923,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Reflex, Category = RPGAttributes)
 		FGameplayAttributeData Reflex;
 	UFUNCTION()
-		void OnRep_Reflex() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Reflex); }
+		void OnRep_Reflex(const FGameplayAttributeData& OldReflex) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Reflex, OldReflex); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Reflex)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetReflex() const
@@ -949,7 +950,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Willpower, Category = RPGAttributes)
 		FGameplayAttributeData Willpower;
 	UFUNCTION()
-		void OnRep_Willpower() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Willpower); }
+		void OnRep_Willpower(const FGameplayAttributeData& OldWillpower) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Willpower, OldWillpower); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Willpower)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetWillpower() const
@@ -976,7 +977,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_BaseAttack, Category = RPGAttributes)
 		FGameplayAttributeData BaseAttack;
 	UFUNCTION()
-		void OnRep_BaseAttack() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, BaseAttack); }
+		void OnRep_BaseAttack(const FGameplayAttributeData& OldBaseAttack) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, BaseAttack, OldBaseAttack); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, BaseAttack)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetBaseAttack() const
@@ -1003,7 +1004,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_BaseAttackBonus, Category = RPGAttributes)
 		FGameplayAttributeData BaseAttackBonus;
 	UFUNCTION()
-		void OnRep_BaseAttackBonus() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, BaseAttackBonus); }
+		void OnRep_BaseAttackBonus(const FGameplayAttributeData& OldBaseAttackBonus) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, BaseAttackBonus, OldBaseAttackBonus); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, BaseAttackBonus)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetBaseAttackBonus() const
@@ -1030,7 +1031,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_AttackPower, Category = RPGAttributes)
 		FGameplayAttributeData AttackPower;
 	UFUNCTION()
-		void OnRep_AttackPower() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, AttackPower); }
+		void OnRep_AttackPower(const FGameplayAttributeData& OldAttackPower) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, AttackPower, OldAttackPower); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, AttackPower)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetAttackPower() const
@@ -1057,7 +1058,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_AttackSpeed, Category = RPGAttributes)
 		FGameplayAttributeData AttackSpeed;
 	UFUNCTION()
-		void OnRep_AttackSpeed() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, AttackSpeed); }
+		void OnRep_AttackSpeed(const FGameplayAttributeData& OldAttackSpeed) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, AttackSpeed, OldAttackSpeed); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, AttackSpeed)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetAttackSpeed() const
@@ -1084,7 +1085,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_CritChance, Category = RPGAttributes)
 		FGameplayAttributeData CritChance;
 	UFUNCTION()
-		void OnRep_CritChance() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, CritChance); }
+		void OnRep_CritChance(const FGameplayAttributeData& OldCritChance) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, CritChance, OldCritChance); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, CritChance)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetCritChance() const
@@ -1111,7 +1112,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_CritMultiplier, Category = RPGAttributes)
 		FGameplayAttributeData CritMultiplier;
 	UFUNCTION()
-		void OnRep_CritMultiplier() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, CritMultiplier); }
+		void OnRep_CritMultiplier(const FGameplayAttributeData& OldCritMultiplier) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, CritMultiplier, OldCritMultiplier); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, CritMultiplier)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetCritMultiplier() const
@@ -1138,7 +1139,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Haste, Category = RPGAttributes)
 		FGameplayAttributeData Haste;
 	UFUNCTION()
-		void OnRep_Haste() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Haste); }
+		void OnRep_Haste(const FGameplayAttributeData& OldHaste) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Haste, OldHaste); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Haste)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetHaste() const
@@ -1165,7 +1166,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_SpellPower, Category = RPGAttributes)
 		FGameplayAttributeData SpellPower;
 	UFUNCTION()
-		void OnRep_SpellPower() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, SpellPower); }
+		void OnRep_SpellPower(const FGameplayAttributeData& OldSpellPower) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, SpellPower, OldSpellPower); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, SpellPower)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetSpellPower() const
@@ -1192,7 +1193,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_SpellPenetration, Category = RPGAttributes)
 		FGameplayAttributeData SpellPenetration;
 	UFUNCTION()
-		void OnRep_SpellPenetration() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, SpellPenetration); }
+		void OnRep_SpellPenetration(const FGameplayAttributeData& OldSpellPenetration) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, SpellPenetration, OldSpellPenetration); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, SpellPenetration)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetSpellPenetration() const
@@ -1219,7 +1220,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Defense, Category = RPGAttributes)
 		FGameplayAttributeData Defense;
 	UFUNCTION()
-		void OnRep_Defense() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Defense); }
+		void OnRep_Defense(const FGameplayAttributeData& OldDefense) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Defense, OldDefense); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Defense)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetDefense() const
@@ -1246,7 +1247,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Dodge, Category = RPGAttributes)
 		FGameplayAttributeData Dodge;
 	UFUNCTION()
-		void OnRep_Dodge() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Dodge); }
+		void OnRep_Dodge(const FGameplayAttributeData& OldDodge) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Dodge, OldDodge); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Dodge)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetDodge() const
@@ -1273,7 +1274,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Parry, Category = RPGAttributes)
 		FGameplayAttributeData Parry;
 	UFUNCTION()
-		void OnRep_Parry() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Parry); }
+		void OnRep_Parry(const FGameplayAttributeData& OldParry) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Parry, OldParry); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Parry)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetParry() const
@@ -1300,7 +1301,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Avoidance, Category = RPGAttributes)
 		FGameplayAttributeData Avoidance;
 	UFUNCTION()
-		void OnRep_Avoidance() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Avoidance); }
+		void OnRep_Avoidance(const FGameplayAttributeData& OldAvoidance) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Avoidance, OldAvoidance); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Avoidance)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetAvoidance() const
@@ -1327,7 +1328,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Versatility, Category = RPGAttributes)
 		FGameplayAttributeData Versatility;
 	UFUNCTION()
-		void OnRep_Versatility() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Versatility); }
+		void OnRep_Versatility(const FGameplayAttributeData& OldVersatility) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Versatility, OldVersatility); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Versatility)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetVersatility() const
@@ -1354,7 +1355,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Multishot, Category = RPGAttributes)
 		FGameplayAttributeData Multishot;
 	UFUNCTION()
-		void OnRep_Multishot() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Multishot); }
+		void OnRep_Multishot(const FGameplayAttributeData& OldMultishot) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Multishot, OldMultishot); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Multishot)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetMultishot() const
@@ -1381,7 +1382,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Initiative, Category = RPGAttributes)
 		FGameplayAttributeData Initiative;
 	UFUNCTION()
-		void OnRep_Initiative() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Initiative); }
+		void OnRep_Initiative(const FGameplayAttributeData& OldInitiative) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Initiative, OldInitiative); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Initiative)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetInitiative() const
@@ -1408,7 +1409,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_NaturalArmor, Category = RPGAttributes)
 		FGameplayAttributeData NaturalArmor;
 	UFUNCTION()
-		void OnRep_NaturalArmor() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, NaturalArmor); }
+		void OnRep_NaturalArmor(const FGameplayAttributeData& OldNaturalArmor) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, NaturalArmor, OldNaturalArmor); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, NaturalArmor)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetNaturalArmor() const
@@ -1435,7 +1436,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_PhysicalArmor, Category = RPGAttributes)
 		FGameplayAttributeData PhysicalArmor;
 	UFUNCTION()
-		void OnRep_PhysicalArmor() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, PhysicalArmor); }
+		void OnRep_PhysicalArmor(const FGameplayAttributeData& OldPhysicalArmor) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, PhysicalArmor, OldPhysicalArmor); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, PhysicalArmor)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetPhysicalArmor() const
@@ -1462,7 +1463,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_BonusArmor, Category = RPGAttributes)
 		FGameplayAttributeData BonusArmor;
 	UFUNCTION()
-		void OnRep_BonusArmor() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, BonusArmor); }
+		void OnRep_BonusArmor(const FGameplayAttributeData& OldBonusArmor) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, BonusArmor, OldBonusArmor); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, BonusArmor)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetBonusArmor() const
@@ -1489,7 +1490,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_ForceArmor, Category = RPGAttributes)
 		FGameplayAttributeData ForceArmor;
 	UFUNCTION()
-		void OnRep_ForceArmor() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, ForceArmor); }
+		void OnRep_ForceArmor(const FGameplayAttributeData& OldForceArmor) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, ForceArmor, OldForceArmor); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, ForceArmor)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetForceArmor() const
@@ -1516,7 +1517,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_MagicArmor, Category = RPGAttributes)
 		FGameplayAttributeData MagicArmor;
 	UFUNCTION()
-		void OnRep_MagicArmor() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, MagicArmor); }
+		void OnRep_MagicArmor(const FGameplayAttributeData& OldMagicArmor) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, MagicArmor, OldMagicArmor); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, MagicArmor)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetMagicArmor() const
@@ -1543,7 +1544,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Resistance, Category = RPGAttributes)
 		FGameplayAttributeData Resistance;
 	UFUNCTION()
-		void OnRep_Resistance() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Resistance); }
+		void OnRep_Resistance(const FGameplayAttributeData& OldResistance) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Resistance, OldResistance); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Resistance)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetResistance() const
@@ -1570,7 +1571,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_ReloadSpeed, Category = RPGAttributes)
 		FGameplayAttributeData ReloadSpeed;
 	UFUNCTION()
-		void OnRep_ReloadSpeed() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, ReloadSpeed); }
+		void OnRep_ReloadSpeed(const FGameplayAttributeData& OldReloadSpeed) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, ReloadSpeed, OldReloadSpeed); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, ReloadSpeed)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetReloadSpeed() const
@@ -1597,7 +1598,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Range, Category = RPGAttributes)
 		FGameplayAttributeData Range;
 	UFUNCTION()
-		void OnRep_Range() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Range); }
+		void OnRep_Range(const FGameplayAttributeData& OldRange) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Range, OldRange); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Range)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetRange() const
@@ -1624,7 +1625,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Speed, Category = RPGAttributes)
 		FGameplayAttributeData Speed;
 	UFUNCTION()
-		void OnRep_Speed() { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Speed); }
+		void OnRep_Speed(const FGameplayAttributeData& OldSpeed) { GAMEPLAYATTRIBUTE_REPNOTIFY(UOWSAttributeSet, Speed, OldSpeed); }
 	ATTRIBUTE_ACCESSORS(UOWSAttributeSet, Speed)
 		UFUNCTION(BlueprintCallable, Category = RPGAttributes)
 		float OWSGetSpeed() const
@@ -1646,6 +1647,8 @@ public:
 		Speed.SetBaseValue(NewVal);
 		Speed.SetCurrentValue(NewVal);
 	}
+
+
 
 
 

@@ -66,24 +66,24 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="RPGWorldServer.exe" size="19928">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="RPGWorldServer.exe" size="28672">
       <assemblyIdentity name="RPGWorldServer" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>mtblI8x9j2zkmWlPVDslP754kaCIP/0o3HZ50Lln9TY=</dsig:DigestValue>
+        <dsig:DigestValue>S1G4+XRpQ2CEkjT3qpXVwis2MIDCSrQUKZdnxUwgtxc=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
-  <file name="RPGWorldServer.exe.config" size="723">
+  <file name="RPGWorldServer.exe.config" size="707">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>FEJcjJZT+kF5RL5//NE/QHuNn9eHeLqLPZPlmUJn+nM=</dsig:DigestValue>
+      <dsig:DigestValue>7r++eBP6N7MS+dj7Q+dc5gf0dr2DTgcihLSA0Eb4Qhs=</dsig:DigestValue>
     </hash>
   </file>
 </asmv1:assembly>

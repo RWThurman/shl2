@@ -17,6 +17,9 @@ class OWSPLUGIN_API UOWSLoginWidget : public UUserWidget
 	FHttpModule* Http;
 	
 public:	
+
+	UOWSLoginWidget(const class FObjectInitializer& ObjectInitializer);
+
 	UPROPERTY(BlueprintReadWrite)
 		FString RPGAPICustomerKey;
 
@@ -38,6 +41,7 @@ public:
 		void ErrorLogin(const FString &ErrorMsg);
 	*/
 
+	//LoginAndCreateSession
 	UFUNCTION(BlueprintCallable, Category = "Login")
 		void LoginAndCreateSession(FString Email, FString Password);
 
@@ -49,6 +53,31 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Login")
 		void ErrorLoginAndCreateSession(const FString &ErrorMsg);
 
+	//ExternalLoginAndCreateSession
+	UFUNCTION(BlueprintCallable, Category = "Login")
+		void ExternalLoginAndCreateSession(FString Email, FString Password);
+
+	void OnExternalLoginAndCreateSessionResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Login")
+		void NotifyExternalLoginAndCreateSession(const FString &UserSessionGUID);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Login")
+		void ErrorExternalLoginAndCreateSession(const FString &ErrorMsg);
+
+	//Register
+	UFUNCTION(BlueprintCallable, Category = "Login")
+		void Register(FString Email, FString Password, FString FirstName, FString LastName);
+
+	void OnRegisterResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Login")
+		void NotifyRegister();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Login")
+		void ErrorRegister(const FString &ErrorMsg);
+
+	//OpenCreateAccountInBrowser
 	UFUNCTION(BlueprintCallable, Category = "Login")
 		void OpenCreateAccountInBrowser();
 	

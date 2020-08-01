@@ -4,6 +4,7 @@
 
 #include "GameFramework/GameMode.h"
 #include "OWSCharacter.h"
+#include "OWSPlayerController.h"
 #include "OWSGameMode.generated.h"
 
 USTRUCT(BlueprintType)
@@ -128,6 +129,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Items")
 		TArray<FInventoryItemStruct> AllInventoryItems;
 
+	UPROPERTY()
+		TMap<FString, int32> MeshItemsMap;
+
+	UFUNCTION()
+		void AddItemMeshToAllPlayers(const FString& ItemName, const int32 ItemMeshID);
+
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 		FInventoryItemStruct& FindItemDefinition(FString ItemName);
 	
@@ -168,6 +175,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Config")
 		FString RPGAPICustomerKey;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Config")
+		FString OWSEncryptionKey = "";
 	
 	//Get All Inventory Items
 	UFUNCTION(BlueprintCallable, Category = "Inventory")

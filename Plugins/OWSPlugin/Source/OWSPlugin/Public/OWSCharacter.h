@@ -5,6 +5,7 @@
 #include "OWSCharacterBase.h"
 #include "GameFramework/Character.h"
 #include "Runtime/Online/HTTP/Public/Http.h"
+#include "Runtime/JsonUtilities/Public/JsonObjectConverter.h"
 #include "Runtime/Core/Public/Misc/Guid.h"
 #include "GenericTeamAgentInterface.h"
 #include "OWSInventory.h"
@@ -125,6 +126,9 @@ public:
 		int32 AlwaysRelevantPartyID;
 	*/
 
+	UFUNCTION(BlueprintCallable, Category = "Player Controller")
+		AOWSPlayerController* GetOWSPlayerController();
+
 	//Mob
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mob)
 		bool IsAMob;
@@ -145,7 +149,7 @@ public:
 
 	virtual void PossessedBy(AController* NewController) override;
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Init")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Init")
 		void OnRPGInitalizationComplete();
 
 	//Get Character Stats
@@ -168,10 +172,10 @@ public:
 
 	void AutoLoadCustomCharacterStats();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Stats")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Stats")
 		void LoadCustomCharacterStats();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Stats")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Stats")
 		void UpdateCharacterStatsAfterLoading();
 
 	//Get Character Statuses
@@ -180,9 +184,9 @@ public:
 
 	void OnGetCharacterStatusesResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Stats")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Stats")
 		void NotifyGetCharacterStatuses();
-	UFUNCTION(BlueprintImplementableEvent, Category = "Stats")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Stats")
 		void ErrorGetCharacterStatuses(const FString &ErrorMsg);
 
 	//Add or Update Character Status
@@ -199,9 +203,9 @@ public:
 
 	void OnGetCustomCharacterData(const TArray<FCustomCharacterDataStruct> &CustomCharacterData);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Stats")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Stats")
 		void NotifyGetCustomCharacterData(const TArray<FCustomCharacterDataStruct> &CustomCharacterData);
-	UFUNCTION(BlueprintImplementableEvent, Category = "Stats")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Stats")
 		void ErrorGetCustomCharacterData(const FString &ErrorMsg);
 
 	//Add Character Custom Data
@@ -232,18 +236,18 @@ public:
 		UOWSInventory* CreateHUDInventory(FName InventoryName, int32 Size, int32 NumberOfColumns);
 
 	bool AddItemToLocalInventoryItems(const FString& ItemName, const bool ItemCanStack, const bool IsUsable, const bool IsConsumedOnUse, const int32 ItemTypeID,
-		const FString& TextureToUseForIcon, const int32 IconSlotWidth, const int32 IconSlotHeight);
+		const FString& TextureToUseForIcon, const int32 IconSlotWidth, const int32 IconSlotHeight, const int32 ItemMeshID, const FString& CustomData);
 
 	UFUNCTION(Client, Reliable)
 		void Client_AddItemToLocalInventoryItems(const FString& ItemName, const bool ItemCanStack, const bool IsUsable, const bool IsConsumedOnUse, const int32 ItemTypeID, 
-			const FString& TextureToUseForIcon, const int32 IconSlotWidth, const int32 IconSlotHeight);
+			const FString& TextureToUseForIcon, const int32 IconSlotWidth, const int32 IconSlotHeight, const int32 ItemMeshID, const FString& CustomData);
 
 	UFUNCTION(Client, Reliable)
 		void Client_CreateHUDInventory(FName InventoryName, int32 Size, int32 NumberOfColumns);
 
 	UFUNCTION(Client, Reliable)
 		void Client_AddItemToInventory(const FName& InventoryName, const FString& ItemName, const int32 StackSize, const int32 InSlotNumber, const int32 NumberOfUsesLeft, const int32 Condition,
-			const FString& PerInstanceCustomData, const FGuid UniqueItemGUID);
+			const FString& PerInstanceCustomData, const FGuid UniqueItemGUID, const int32 ItemMeshID);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 		UOWSInventory* GetHUDInventoryFromName(FName InventoryName);
@@ -256,9 +260,11 @@ public:
 
 	void OnGetInventoryItemsResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+	virtual void ReadInventoryItems(const TArray<TSharedPtr<FJsonValue>> Rows, FName& InventoryName, int32& InventorySize, TArray<FInventoryItemStruct>& InventoryItems);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
 		void GetInventoryItemsComplete(const TArray<FInventoryItemStruct> &InventoryItems);
-	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
 		void GetInventoryItemsError(const FString &ErrorMsg);
 
 	//Add Item to Inventory
@@ -267,9 +273,9 @@ public:
 
 	void OnAddItemToInventoryResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
 		void AddItemToInventoryComplete();
-	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
 		void AddItemToInventoryError();
 
 	//Add Item to Inventory with Custom Data
@@ -278,9 +284,9 @@ public:
 
 	void OnAddItemToInventoryWithCustomDataResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
 		void AddItemToInventoryWithCustomDataComplete();
-	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
 		void AddItemToInventoryWithCustomDataError();
 
 	//Remove Item from Inventory
@@ -307,9 +313,9 @@ public:
 
 	void OnCreateInventoryResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
 		void CreateInventoryComplete();
-	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
 		void CreateInventoryError(const FString &ErrorMsg);
 
 
@@ -321,9 +327,9 @@ public:
 
 	void OnGetCharacterAbilitiesResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Abilities")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Abilities")
 		void GetCharacterAbilitiesComplete(const TArray<FAbilityStruct> &AbilityBars);
-	UFUNCTION(BlueprintImplementableEvent, Category = "Abilities")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Abilities")
 		void GetCharacterAbilitiesError(const FString &ErrorMsg);
 
 	//Get Ability Bars
@@ -332,9 +338,9 @@ public:
 
 	void OnGetAbilityBarsResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Abilities")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Abilities")
 		void GetAbilityBarsComplete(const TArray<FAbilityBarStruct> &AbilityBars);
-	UFUNCTION(BlueprintImplementableEvent, Category = "Abilities")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Abilities")
 		void GetAbilityBarsError(const FString &ErrorMsg);
 
 	//Get Ability Bar Abilities
@@ -343,9 +349,9 @@ public:
 
 	void OnGetAbilityBarsAndAbilitiesResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Abilities")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Abilities")
 		void GetAbilityBarsAndAbilitiesComplete(const TArray<FAbilityBarStruct> &AbilityBars);
-	UFUNCTION(BlueprintImplementableEvent, Category = "Abilities")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Abilities")
 		void GetAbilityBarsAndAbilitiesError(const FString &ErrorMsg);
 
 

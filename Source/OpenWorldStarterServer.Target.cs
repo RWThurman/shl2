@@ -9,5 +9,6 @@ public class OpenWorldStarterServerTarget : TargetRules
     {
         Type = TargetType.Server;
         ExtraModuleNames.AddRange(new string[] { "OpenWorldStarter" });
+        //DefaultBuildSettings = BuildSettingsVersion.V2;
     }
 }

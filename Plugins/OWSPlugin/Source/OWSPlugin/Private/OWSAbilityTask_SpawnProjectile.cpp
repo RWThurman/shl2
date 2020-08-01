@@ -109,7 +109,7 @@ bool UOWSAbilityTask_SpawnProjectile::BeginSpawningActor(UGameplayAbility* Ownin
 					{
 						UE_LOG(OWS, Verbose, TEXT("Server Spawned"));
 
-						NewProjectile->Instigator = MyPawn;
+						NewProjectile->SetInstigator(MyPawn);
 						NewProjectile->SetOwner(MyPawn);
 
 						if ((CatchupTickDelta > 0.f) && NewProjectile->ProjectileMovement)

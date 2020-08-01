@@ -52,7 +52,7 @@ void AOWSCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	if (Role == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		if (!IsAMob)
 		{
@@ -72,6 +72,11 @@ void AOWSCharacter::Tick( float DeltaTime )
 void AOWSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+AOWSPlayerController* AOWSCharacter::GetOWSPlayerController()
+{
+	return Cast<AOWSPlayerController>(GetController());
 }
 
 FGenericTeamId AOWSCharacter::GetGenericTeamId() const
@@ -144,6 +149,20 @@ void AOWSCharacter::OnGetCharacterStatsBaseResponseReceived(FHttpRequestPtr Requ
 		UE_LOG(OWS, Error, TEXT("OnGetCharacterStatsResponseReceived Error accessing server!"));
 	}
 }
+
+void AOWSCharacter::LoadCustomCharacterStats_Implementation() {
+
+}
+
+void AOWSCharacter::UpdateCharacterStatsAfterLoading_Implementation() {
+
+}
+
+void AOWSCharacter::OnRPGInitalizationComplete_Implementation() {
+
+}
+
+
 
 void AOWSCharacter::LoadCharacterStatsFromJSON(TSharedPtr<FJsonObject>JsonObject)
 {
@@ -423,6 +442,14 @@ void AOWSCharacter::OnGetCharacterStatusesResponseReceived(FHttpRequestPtr Reque
 	}
 }
 
+void AOWSCharacter::NotifyGetCharacterStatuses_Implementation() {
+
+}
+
+void AOWSCharacter::ErrorGetCharacterStatuses_Implementation(const FString &ErrorMsg) {
+
+}
+
 
 void AOWSCharacter::AddOrUpdateCharacterStatus(FString StatusName, int32 StatusValue, int32 StatusDurationMinutes)
 {
@@ -541,6 +568,15 @@ void AOWSCharacter::OnGetCustomCharacterDataResponseReceived(FHttpRequestPtr Req
 }
 
 
+void AOWSCharacter::NotifyGetCustomCharacterData_Implementation(const TArray<FCustomCharacterDataStruct> &CustomCharacterData) {
+
+}
+
+void AOWSCharacter::ErrorGetCustomCharacterData_Implementation(const FString &ErrorMsg) {
+
+}
+
+
 void AOWSCharacter::AddOrUpdateCustomCharacterData(FString CustomFieldName, FString CustomValue)
 {
 	AOWSPlayerController* PC = Cast<AOWSPlayerController>(this->Controller);
@@ -640,7 +676,7 @@ void AOWSCharacter::OnGetInventoryItemsResponseReceived(FHttpRequestPtr Request,
 			{
 				TArray<TSharedPtr<FJsonValue>> Rows = JsonObject->GetArrayField("rows");
 
-				for (int RowNum = 0; RowNum != Rows.Num(); RowNum++) {
+				/*for (int RowNum = 0; RowNum != Rows.Num(); RowNum++) {
 					FInventoryItemStruct tempInventoryItem;
 					TSharedPtr<FJsonObject> tempRow = Rows[RowNum]->AsObject();
 					tempInventoryItem.ItemName = tempRow->GetStringField("ItemName");
@@ -684,62 +720,10 @@ void AOWSCharacter::OnGetInventoryItemsResponseReceived(FHttpRequestPtr Request,
 					tempInventoryItem.PremiumCurrencyPrice = tempRow->GetIntegerField("PremiumCurrencyPrice");
 					tempInventoryItem.FreeCurrencyPrice = tempRow->GetIntegerField("FreeCurrencyPrice");
 
+					tempInventoryItem.ItemMeshID = tempRow->GetIntegerField("ItemMeshID");
 					tempInventoryItem.WeaponActorClassPath = tempRow->GetStringField("WeaponActorClass");
 					tempInventoryItem.StaticMeshPath = tempRow->GetStringField("StaticMesh");
 					tempInventoryItem.SkeletalMeshPath = tempRow->GetStringField("SkeletalMesh");
-
-					//WeaponActorClass
-					/*tempInventoryItem.WeaponActorClassPath = tempRow->GetStringField("WeaponActorClass");
-					tempInventoryItem.WeaponActorClass = nullptr;
-					
-					if (!tempRow->GetStringField("WeaponActorClass").IsEmpty())
-					{
-						auto cls = StaticLoadObject(UObject::StaticClass(), nullptr, *tempRow->GetStringField("WeaponActorClass"));
-
-						if (cls)
-						{
-							UBlueprint * bp = Cast<UBlueprint>(cls);
-							if (bp)
-							{
-								tempInventoryItem.WeaponActorClass = (UClass*)bp->GeneratedClass;
-							}
-						}
-
-						if (!tempInventoryItem.WeaponActorClass)
-						{
-							UE_LOG(LogTemp, Error, TEXT("Error loading Weapon Actor Class!"));
-						}
-					}
-					
-					//tempInventoryItem.WeaponActorClass = LoadClass<AActor>(NULL, TEXT("/Game/Inventory/InventoryItemPickup.InventoryItemPickup"), NULL, LOAD_None, NULL);
-
-					
-
-					//Static Mesh
-					tempInventoryItem.StaticMeshPath = tempRow->GetStringField("StaticMesh");
-					tempInventoryItem.StaticMesh = nullptr;
-					if (!tempRow->GetStringField("StaticMesh").IsEmpty())
-					{
-						tempInventoryItem.StaticMesh = LoadObject<UStaticMesh>(NULL, *tempRow->GetStringField("StaticMesh"), NULL, LOAD_None, NULL);
-					
-						if (!tempInventoryItem.StaticMesh)
-						{							
-							UE_LOG(LogTemp, Error, TEXT("Error loading Static Mesh!"));
-						}
-					}
-
-					//SkeletalMesh
-					tempInventoryItem.SkeletalMeshPath = tempRow->GetStringField("SkeletalMesh");
-					tempInventoryItem.SkeletalMesh = nullptr;
-					if (!tempRow->GetStringField("SkeletalMesh").IsEmpty())
-					{
-						tempInventoryItem.SkeletalMesh = LoadObject<USkeletalMesh>(NULL, *tempRow->GetStringField("SkeletalMesh"), NULL, LOAD_None, NULL);
-
-						if (!tempInventoryItem.SkeletalMesh)
-						{
-							UE_LOG(LogTemp, Error, TEXT("Error loading Skeletal Mesh!"));
-						}
-					}*/
 
 					//TextureIcon
 					tempInventoryItem.TextureToUseForIcon = tempRow->GetStringField("TextureToUseForIcon");
@@ -764,9 +748,11 @@ void AOWSCharacter::OnGetInventoryItemsResponseReceived(FHttpRequestPtr Request,
 						tempInventoryItem.IconSlotHeight = 1;
 
 					InventoryItems.Add(tempInventoryItem);
-				}
+				}*/
+
+				//Send in JSON and get back InventoryName, InventorySize, and InventoryItems
+				ReadInventoryItems(Rows, InventoryName, InventorySize, InventoryItems);
 			}
-			GetInventoryItemsComplete(InventoryItems);
 
 			if (bShouldAutoLoadInventoriesToManage)
 			{
@@ -793,7 +779,11 @@ void AOWSCharacter::OnGetInventoryItemsResponseReceived(FHttpRequestPtr Request,
 						NewlyCreatedInventory->AddItemsFromInventoryItemStruct(InventoryItems);
 					}
 				}
+
+				//GetOWSPlayerController()->SynchUpLocalMeshItemsMap();
 			}
+
+			GetInventoryItemsComplete(InventoryItems);
 		}
 		else
 		{
@@ -808,6 +798,95 @@ void AOWSCharacter::OnGetInventoryItemsResponseReceived(FHttpRequestPtr Request,
 	}
 }
 
+void AOWSCharacter::ReadInventoryItems(const TArray<TSharedPtr<FJsonValue>> Rows, FName& InventoryName, int32& InventorySize, TArray<FInventoryItemStruct>& InventoryItems)
+{
+	for (int RowNum = 0; RowNum != Rows.Num(); RowNum++) {
+		FInventoryItemStruct tempInventoryItem;
+		TSharedPtr<FJsonObject> tempRow = Rows[RowNum]->AsObject();
+		tempInventoryItem.ItemName = tempRow->GetStringField("ItemName");
+		tempInventoryItem.InventoryName = tempRow->GetStringField("InventoryName");
+		InventoryName = FName(*tempInventoryItem.InventoryName);
+		InventorySize = tempRow->GetIntegerField("InventorySize");
+
+		//Default row when an inventory is empty just to get the inventory name
+		if (tempInventoryItem.ItemName == "EmptyInventory")
+			continue;
+
+		tempInventoryItem.ItemDescription = tempRow->GetStringField("ItemDescription");
+		FString tempUniqueItemGUIDString = tempRow->GetStringField("CharInventoryItemGUID");
+		FGuid::Parse(tempUniqueItemGUIDString, tempInventoryItem.UniqueItemGUID);
+		tempInventoryItem.InSlotNumber = tempRow->GetIntegerField("InSlotNumber");
+		tempInventoryItem.Quantity = tempRow->GetIntegerField("Quantity");
+		tempInventoryItem.ItemCanStack = tempRow->GetBoolField("ItemCanStack");
+		tempInventoryItem.ItemStackSize = tempRow->GetIntegerField("ItemStackSize");
+		tempInventoryItem.IsUsable = tempRow->GetBoolField("ItemIsUsable");
+		tempInventoryItem.IsConsumedOnUse = tempRow->GetBoolField("ItemIsConsumedOnUse");
+		tempInventoryItem.NumberOfUsesLeft = tempRow->GetIntegerField("NumberOfUsesLeft");
+		tempInventoryItem.ItemWeight = (float)tempRow->GetNumberField("ItemWeight");
+		tempInventoryItem.ItemTypeID = tempRow->GetIntegerField("ItemTypeID");
+		tempInventoryItem.ItemTypeDescription = tempRow->GetStringField("ItemTypeDesc");
+		tempInventoryItem.ItemTypeQuality = tempRow->GetIntegerField("ItemTypeQuality");
+
+		tempInventoryItem.UserItemType = tempRow->GetIntegerField("UserItemType");
+		tempInventoryItem.EquipmentType = tempRow->GetIntegerField("EquipmentType");
+		tempInventoryItem.EquipmentSlotType = tempRow->GetIntegerField("EquipmentSlotType");
+		tempInventoryItem.ItemTier = tempRow->GetIntegerField("ItemTier");
+		tempInventoryItem.ItemQuality = tempRow->GetIntegerField("ItemQuality");
+		tempInventoryItem.ItemDuration = tempRow->GetIntegerField("ItemDuration");
+		tempInventoryItem.CanBeDropped = tempRow->GetBoolField("CanBeDropped");
+		tempInventoryItem.CanBeDestroyed = tempRow->GetBoolField("CanBeDestroyed");
+
+		tempInventoryItem.CustomData = tempRow->GetStringField("CustomData");
+		tempInventoryItem.PerInstanceCustomData = tempRow->GetStringField("PerInstanceCustomData");
+		tempInventoryItem.Condition = tempRow->GetIntegerField("Condition");
+		//tempInventoryItem.ItemMesh = tempRow->GetStringField("ItemMesh");
+		//tempInventoryItem.MeshToUseForPickup = tempRow->GetStringField("MeshToUseForPickup");
+		tempInventoryItem.PremiumCurrencyPrice = tempRow->GetIntegerField("PremiumCurrencyPrice");
+		tempInventoryItem.FreeCurrencyPrice = tempRow->GetIntegerField("FreeCurrencyPrice");
+
+		tempInventoryItem.ItemMeshID = tempRow->GetIntegerField("ItemMeshID");
+		tempInventoryItem.WeaponActorClassPath = tempRow->GetStringField("WeaponActorClass");
+		tempInventoryItem.StaticMeshPath = tempRow->GetStringField("StaticMesh");
+		tempInventoryItem.SkeletalMeshPath = tempRow->GetStringField("SkeletalMesh");
+
+		//TextureIcon
+		tempInventoryItem.TextureToUseForIcon = tempRow->GetStringField("TextureToUseForIcon");
+		tempInventoryItem.TextureIcon = nullptr;
+		if (!tempRow->GetStringField("TextureToUseForIcon").IsEmpty())
+		{
+			tempInventoryItem.TextureIcon = LoadObject<UTexture2D>(NULL, *tempRow->GetStringField("TextureToUseForIcon"), NULL, LOAD_None, NULL);
+
+			if (!tempInventoryItem.TextureIcon)
+			{
+				UE_LOG(LogTemp, Error, TEXT("Error loading Texture Icon!"));
+			}
+		}
+
+		tempInventoryItem.IconSlotWidth = tempRow->GetIntegerField("IconSlotWidth");
+		tempInventoryItem.IconSlotHeight = tempRow->GetIntegerField("IconSlotHeight");
+
+		if (tempInventoryItem.IconSlotWidth < 1)
+			tempInventoryItem.IconSlotWidth = 1;
+
+		if (tempInventoryItem.IconSlotHeight < 1)
+			tempInventoryItem.IconSlotHeight = 1;
+
+		InventoryItems.Add(tempInventoryItem);
+	}
+}
+
+
+//This is an example showing how you can override a BP event in C++.  This will not be called if the BP event node exists in the BP.
+void AOWSCharacter::GetInventoryItemsComplete_Implementation(const TArray<FInventoryItemStruct> &InventoryItems)
+{
+	UE_LOG(OWS, Error, TEXT("GetInventoryItemsComplete_Implementation called!"));
+
+}
+
+void AOWSCharacter::GetInventoryItemsError_Implementation(const FString &ErrorMsg) {
+
+}
+
 
 void AOWSCharacter::AddItemToInventory(FString InventoryName, FString ItemName, int InSlotNumber, int Quantity, int NumberOfUsesLeft, int Condition, FGuid &UniqueItemGUID)
 {
@@ -819,7 +898,7 @@ void AOWSCharacter::AddItemToInventory(FString InventoryName, FString ItemName, 
 
 		UniqueItemGUID = FGuid::NewGuid();
 
-		Client_AddItemToInventory(FName(*InventoryName), ItemName, 1, InSlotNumber, NumberOfUsesLeft, Condition, "", UniqueItemGUID);
+		Client_AddItemToInventory(FName(*InventoryName), ItemName, 1, InSlotNumber, NumberOfUsesLeft, Condition, "", UniqueItemGUID, 0);
 
 		TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 		Request->OnProcessRequestComplete().BindUObject(this, &AOWSCharacter::OnAddItemToInventoryResponseReceived);
@@ -844,7 +923,6 @@ void AOWSCharacter::AddItemToInventory(FString InventoryName, FString ItemName, 
 		Request->ProcessRequest();
 	}
 }
-
 
 void AOWSCharacter::OnAddItemToInventoryResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
@@ -871,6 +949,15 @@ void AOWSCharacter::OnAddItemToInventoryResponseReceived(FHttpRequestPtr Request
 }
 
 
+void AOWSCharacter::AddItemToInventoryComplete_Implementation()
+{
+
+}
+
+void AOWSCharacter::AddItemToInventoryError_Implementation()
+{
+
+}
 
 void AOWSCharacter::AddItemToInventoryWithCustomData(FString InventoryName, FString ItemName, int InSlotNumber, int Quantity, int NumberOfUsesLeft, int Condition, FString CustomData, FGuid &UniqueItemGUID)
 {
@@ -882,7 +969,7 @@ void AOWSCharacter::AddItemToInventoryWithCustomData(FString InventoryName, FStr
 
 		UniqueItemGUID = FGuid::NewGuid();
 
-		Client_AddItemToInventory(FName(*InventoryName), ItemName, 1, InSlotNumber, NumberOfUsesLeft, Condition, CustomData, UniqueItemGUID);
+		Client_AddItemToInventory(FName(*InventoryName), ItemName, 1, InSlotNumber, NumberOfUsesLeft, Condition, CustomData, UniqueItemGUID, 0);
 
 		TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 		Request->OnProcessRequestComplete().BindUObject(this, &AOWSCharacter::OnAddItemToInventoryWithCustomDataResponseReceived);
@@ -909,7 +996,6 @@ void AOWSCharacter::AddItemToInventoryWithCustomData(FString InventoryName, FStr
 	}
 }
 
-
 void AOWSCharacter::OnAddItemToInventoryWithCustomDataResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if (bWasSuccessful)
@@ -934,7 +1020,13 @@ void AOWSCharacter::OnAddItemToInventoryWithCustomDataResponseReceived(FHttpRequ
 	}
 }
 
+void AOWSCharacter::AddItemToInventoryWithCustomDataComplete_Implementation() {
 
+}
+
+void AOWSCharacter::AddItemToInventoryWithCustomDataError_Implementation() {
+
+}
 
 void AOWSCharacter::RemoveItemFromInventory(FGuid UniqueItemGUID)
 {
@@ -961,7 +1053,6 @@ void AOWSCharacter::RemoveItemFromInventory(FGuid UniqueItemGUID)
 		Request->ProcessRequest();
 	}
 }
-
 
 void AOWSCharacter::OnRemoveItemFromInventoryResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
@@ -1012,7 +1103,6 @@ void AOWSCharacter::SaveInventory(FString InventoryName, FString InventoryData)
 	}
 }
 
-
 void AOWSCharacter::OnSaveInventoryResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if (bWasSuccessful)
@@ -1062,7 +1152,6 @@ void AOWSCharacter::SerializeAndSaveInventory(FName InventoryName)
 	}
 }
 
-
 void AOWSCharacter::OnSerializeAndSaveInventoryResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if (bWasSuccessful)
@@ -1083,7 +1172,6 @@ void AOWSCharacter::OnSerializeAndSaveInventoryResponseReceived(FHttpRequestPtr 
 		UE_LOG(OWS, Error, TEXT("OnSerializeAndSaveInventoryResponseReceived Error accessing server!"));
 	}
 }
-
 
 
 void AOWSCharacter::CreateInventory(FString InventoryName, int InventorySize)
@@ -1113,7 +1201,6 @@ void AOWSCharacter::CreateInventory(FString InventoryName, int InventorySize)
 	}
 }
 
-
 void AOWSCharacter::OnCreateInventoryResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if (bWasSuccessful)
@@ -1136,6 +1223,15 @@ void AOWSCharacter::OnCreateInventoryResponseReceived(FHttpRequestPtr Request, F
 		UE_LOG(OWS, Error, TEXT("OnSaveInventoryResponseReceived Error accessing server!"));
 		CreateInventoryError(TEXT("OnSaveInventoryResponseReceived Error accessing server!"));
 	}
+}
+
+
+void AOWSCharacter::CreateInventoryComplete_Implementation() {
+
+}
+
+void AOWSCharacter::CreateInventoryError_Implementation(const FString &ErrorMsg) {
+
 }
 
 
@@ -1231,6 +1327,14 @@ void AOWSCharacter::OnGetCharacterAbilitiesResponseReceived(FHttpRequestPtr Requ
 }
 
 
+void AOWSCharacter::GetCharacterAbilitiesComplete_Implementation(const TArray<FAbilityStruct> &AbilityBars) {
+
+}
+
+void AOWSCharacter::GetCharacterAbilitiesError_Implementation(const FString &ErrorMsg) {
+
+}
+
 
 void AOWSCharacter::GetAbilityBars()
 {
@@ -1306,6 +1410,13 @@ void AOWSCharacter::OnGetAbilityBarsResponseReceived(FHttpRequestPtr Request, FH
 }
 
 
+void AOWSCharacter::GetAbilityBarsComplete_Implementation(const TArray<FAbilityBarStruct> &AbilityBars) {
+
+}
+
+void AOWSCharacter::GetAbilityBarsError_Implementation(const FString &ErrorMsg) {
+
+}
 
 
 void AOWSCharacter::GetAbilityBarsAndAbilities()
@@ -1407,6 +1518,15 @@ void AOWSCharacter::OnGetAbilityBarsAndAbilitiesResponseReceived(FHttpRequestPtr
 	}
 }
 
+void AOWSCharacter::GetAbilityBarsAndAbilitiesComplete_Implementation(const TArray<FAbilityBarStruct> &AbilityBars) {
+
+}
+
+void AOWSCharacter::GetAbilityBarsAndAbilitiesError_Implementation(const FString &ErrorMsg) {
+
+}
+
+
 AOWSGameMode* AOWSCharacter::GetGameMode()
 {
 	return (AOWSGameMode*)GetWorld()->GetAuthGameMode();
@@ -1433,7 +1553,7 @@ void AOWSCharacter::OnRep_InventoriesToManage()
 
 UOWSInventory* AOWSCharacter::CreateHUDInventory(FName InventoryName, int32 Size, int32 NumberOfColumns)
 {
-	if (Role == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		UOWSInventory* Inventory = NewObject<UOWSInventory>();
 		Inventory->SetInventoryName(InventoryName);
@@ -1449,7 +1569,7 @@ UOWSInventory* AOWSCharacter::CreateHUDInventory(FName InventoryName, int32 Size
 
 void AOWSCharacter::Client_CreateHUDInventory_Implementation(FName InventoryName, int32 Size, int32 NumberOfColumns)
 {
-	if (Role != ROLE_Authority)
+	if (GetLocalRole() != ROLE_Authority)
 	{
 		UOWSInventory* Inventory = NewObject<UOWSInventory>();
 		Inventory->SetInventoryName(InventoryName);
@@ -1460,7 +1580,7 @@ void AOWSCharacter::Client_CreateHUDInventory_Implementation(FName InventoryName
 }
 
 void AOWSCharacter::Client_AddItemToInventory_Implementation(const FName& InventoryName, const FString& ItemName, const int32 StackSize, const int32 InSlotNumber, const int32 NumberOfUsesLeft, const int32 Condition,
-	const FString& PerInstanceCustomData, const FGuid UniqueItemGUID)
+	const FString& PerInstanceCustomData, const FGuid UniqueItemGUID, const int32 ItemMeshID)
 {
 	AOWSInventoryItem* Item = NewObject<AOWSInventoryItem>();
 	Item->ItemName = ItemName;
@@ -1469,6 +1589,7 @@ void AOWSCharacter::Client_AddItemToInventory_Implementation(const FName& Invent
 	Item->Condition = Condition;
 	Item->PerInstanceCustomData = PerInstanceCustomData;
 	Item->UniqueItemGUID = UniqueItemGUID;
+	Item->ItemMeshID = ItemMeshID;
 
 	auto FoundEntry = LocalInventoryItems.FindByPredicate([&](FInventoryItemStruct& InItem)
 	{
@@ -1493,7 +1614,7 @@ void AOWSCharacter::Client_AddItemToInventory_Implementation(const FName& Invent
 }
 
 bool AOWSCharacter::AddItemToLocalInventoryItems(const FString& ItemName, const bool ItemCanStack, const bool IsUsable, const bool IsConsumedOnUse, const int32 ItemTypeID,
-	const FString& TextureToUseForIcon, const int32 IconSlotWidth, const int32 IconSlotHeight)
+	const FString& TextureToUseForIcon, const int32 IconSlotWidth, const int32 IconSlotHeight, const int32 ItemMeshID, const FString& CustomData)
 {
 	auto FoundEntry = LocalInventoryItems.FindByPredicate([&](FInventoryItemStruct& InItem)
 	{
@@ -1513,6 +1634,8 @@ bool AOWSCharacter::AddItemToLocalInventoryItems(const FString& ItemName, const 
 	tempItem.TextureToUseForIcon = TextureToUseForIcon;
 	tempItem.IconSlotWidth = IconSlotWidth;
 	tempItem.IconSlotHeight = IconSlotHeight;
+	tempItem.ItemMeshID = ItemMeshID;
+	tempItem.CustomData = CustomData;
 
 	LocalInventoryItems.Add(tempItem);
 
@@ -1520,7 +1643,7 @@ bool AOWSCharacter::AddItemToLocalInventoryItems(const FString& ItemName, const 
 }
 
 void AOWSCharacter::Client_AddItemToLocalInventoryItems_Implementation(const FString& ItemName, const bool ItemCanStack, const bool IsUsable, const bool IsConsumedOnUse, const int32 ItemTypeID,
-	const FString& TextureToUseForIcon, const int32 IconSlotWidth, const int32 IconSlotHeight)
+	const FString& TextureToUseForIcon, const int32 IconSlotWidth, const int32 IconSlotHeight, const int32 ItemMeshID, const FString& CustomData)
 {
 	FInventoryItemStruct tempItem;
 
@@ -1532,6 +1655,8 @@ void AOWSCharacter::Client_AddItemToLocalInventoryItems_Implementation(const FSt
 	tempItem.TextureToUseForIcon = TextureToUseForIcon;
 	tempItem.IconSlotWidth = IconSlotWidth;
 	tempItem.IconSlotHeight = IconSlotHeight;
+	tempItem.ItemMeshID = ItemMeshID;
+	tempItem.CustomData = CustomData;
 
 	LocalInventoryItems.Add(tempItem);
 }

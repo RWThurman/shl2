@@ -5,6 +5,9 @@
 #include "Engine/GameInstance.h"
 //#include "Misc/AES.h"
 //#include "Misc/Base64.h"
+#include "Runtime/Core/Public/Misc/AES.h"
+#include "Runtime/Core/Public/Misc/Base64.h"
+#include "Runtime/Core/Public/Misc/SecureHash.h"
 #include "Runtime/Online/HTTP/Public/HttpModule.h"
 #include "Abilities/GameplayAbility.h"
 #include "OWSGameInstance.generated.h"
@@ -62,12 +65,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Gameplay Abilities")
 		TSubclassOf<UGameplayAbility> LoadGameplayAbilityClass(FString PathToGameplayAbilityClass) const;
 
-	/*
 	UFUNCTION(BlueprintCallable, Category = "Encryption")
-		FString EncryptWithAES(FString InputString);
+		static FString EncryptWithAES(FString StringtoEncrypt, FString Key);
 	UFUNCTION(BlueprintCallable, Category = "Encryption")
-		FString DecryptWithAES(FString InputString);
-	*/
+		static FString DecryptWithAES(FString StringToDecrypt, FString Key);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sessions")
 		FString UserSessionGUID;
+
+	UPROPERTY()
+		TMap<FString, int32> LocalMeshItemsMap;
 };

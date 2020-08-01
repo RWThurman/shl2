@@ -105,6 +105,9 @@ struct FInventoryItemStruct
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 		FString WeaponActorClassPath;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+		int32 ItemMeshID;
+
 	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 		TSubclassOf<class AActor> WeaponActorClass = nullptr;*/
 
@@ -161,6 +164,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 		FString PerInstanceCustomData;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+		FString SkeletalMeshPath;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+		int32 ItemMeshID;
 
 	/*UPROPERTY(EditAnywhere, Category = "Inventory")
 		int32 ItemID;			//(for SQL)

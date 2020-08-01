@@ -4,6 +4,7 @@
 #include "OWSPlugin.h"
 #include "Runtime/Online/HTTP/Public/Http.h"
 #include "OWSCharacter.h"
+#include "OWSGameMode.h"
 #include "OWSGameInstance.h"
 #include "GameFramework/PlayerInput.h"
 #include "Runtime/Engine/Classes/GameFramework/PlayerState.h"
@@ -35,6 +36,13 @@ AOWSPlayerController::AOWSPlayerController()
 		GGameIni
 	);
 
+	GConfig->GetString(
+		TEXT("/Script/EngineSettings.GeneralProjectSettings"),
+		TEXT("OWSEncryptionKey"),
+		OWSEncryptionKey,
+		GGameIni
+	);
+
 	TravelTimeout = 60.f;
 	MaxPredictionPing = 120.f;
 	bEnableClickEvents = true;
@@ -49,6 +57,7 @@ void AOWSPlayerController::TravelToMap(const FString& URL, const bool SeamlessTr
 void AOWSPlayerController::TravelToMap2(const FString& ServerAndPort, const float X, const float Y, const float Z, const float RX, const float RY, 
 	const float RZ, const FString& PlayerName, const bool SeamlessTravel)
 {
+	/*
 	FString URL = ServerAndPort 
 		+ FString(TEXT("?PLX=")) + FString::SanitizeFloat(X)
 		+ FString(TEXT("?PLY=")) + FString::SanitizeFloat(Y)
@@ -57,10 +66,205 @@ void AOWSPlayerController::TravelToMap2(const FString& ServerAndPort, const floa
 		+ FString(TEXT("?PRY=")) + FString::SanitizeFloat(RY)
 		+ FString(TEXT("?PRZ=")) + FString::SanitizeFloat(RZ)
 		+ FString(TEXT("?Player=")) + FGenericPlatformHttp::UrlEncode(PlayerName);
+	*/
+
+	if (!GetWorld())
+	{
+		return;
+	}
+
+	UOWSGameInstance* GameInstance = Cast<UOWSGameInstance>(GetWorld()->GetGameInstance());
+
+	if (!GameInstance)
+	{
+		return;
+	}
+
+	if (!GetOWSPlayerState())
+	{
+		UE_LOG(OWS, Error, TEXT("Invalid OWS Player State!  You can no longer use TravelToMap2 to connect to a server from the Select Character screen!"));
+
+		return;
+	}
+
+	FString IDData = FString::SanitizeFloat(X)
+		+ "|" + FString::SanitizeFloat(Y)
+		+ "|" + FString::SanitizeFloat(Z)
+		+ "|" + FString::SanitizeFloat(RX)
+		+ "|" + FString::SanitizeFloat(RY)
+		+ "|" + FString::SanitizeFloat(RZ)
+		+ "|" + FGenericPlatformHttp::UrlEncode(GetOWSPlayerState()->GetPlayerName())
+		+ "|" + GetOWSPlayerState()->UserSessionGUID;
+
+	FString EncryptedIDData = GameInstance->EncryptWithAES(IDData, OWSEncryptionKey);
+
+	FString URL = ServerAndPort
+		+ FString(TEXT("?ID=")) + EncryptedIDData;
 
 	UE_LOG(OWS, Warning, TEXT("TravelToMap: %s"), *URL);
 	ClientTravel(URL, TRAVEL_Absolute, false, FGuid());
 }
+
+void AOWSPlayerController::SetSelectedCharacterAndConnectToLastZone(FString UserSessionGUID, FString SelectedCharacterName)
+{
+	//Set character name and get user session
+
+	Http = &FHttpModule::Get();
+	Http->SetHttpTimeout(TravelTimeout); //Set timeout
+
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+	Request->OnProcessRequestComplete().BindUObject(this, &AOWSPlayerController::OnSetSelectedCharacterAndConnectToLastZoneResponseReceived);
+	//This is the url on which to process the request
+	FString url = FString(OWS2APIPath + "api/Users/SetSelectedCharacterAndGetUserSession");
+
+	//Trim whitespace
+	SelectedCharacterName.TrimStartAndEndInline();
+
+	TArray<FStringFormatArg> FormatParams;
+	FormatParams.Add(UserSessionGUID);
+	FormatParams.Add(SelectedCharacterName);
+	FString PostParameters = FString::Format(TEXT("{ \"UserSessionGUID\": \"{0}\", \"SelectedCharacterName\": \"{1}\" }"), FormatParams);
+
+	Request->SetURL(url);
+	Request->SetVerb("POST");
+	Request->SetHeader(TEXT("User-Agent"), "X-UnrealEngine-Agent");
+	Request->SetHeader("Content-Type", TEXT("application/json"));
+	Request->SetHeader(TEXT("X-CustomerGUID"), RPGAPICustomerKey);
+	Request->SetContentAsString(PostParameters);
+	Request->ProcessRequest();	
+}
+
+void AOWSPlayerController::OnSetSelectedCharacterAndConnectToLastZoneResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if (bWasSuccessful)
+	{
+		UE_LOG(OWS, Verbose, TEXT("OnSetSelectedCharacterAndConnectToLastZone Success!"));
+
+		TSharedPtr<FJsonObject> JsonObject;
+		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+
+		if (FJsonSerializer::Deserialize(Reader, JsonObject))
+		{
+			ServerTravelUserSessionGUID = JsonObject->GetStringField("UserSessionGUID");
+			ServerTravelCharacterName = JsonObject->GetStringField("CharName");
+			ServerTravelX = JsonObject->GetNumberField("X");
+			ServerTravelY = JsonObject->GetNumberField("Y");
+			ServerTravelZ = JsonObject->GetNumberField("Z");
+			ServerTravelRX = JsonObject->GetNumberField("RX");
+			ServerTravelRY = JsonObject->GetNumberField("RY");
+			ServerTravelRZ = JsonObject->GetNumberField("RZ");
+
+			UE_LOG(OWS, Log, TEXT("OnSetSelectedCharacterAndConnectToLastZone location is %f, %f, %f"), ServerTravelX, ServerTravelY, ServerTravelZ);
+
+			if (ServerTravelCharacterName.IsEmpty())
+			{
+				ErrorGetUserSession(TEXT("Cannot find User Session!"));
+				return;
+			}
+
+			TravelToLastZoneServer(ServerTravelCharacterName);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("OnSetSelectedCharacterAndConnectToLastZone Server returned no data!"));
+		}
+	}
+	else
+	{
+		UE_LOG(OWS, Error, TEXT("OnSetSelectedCharacterAndConnectToLastZone Error accessing server!"));
+	}
+}
+
+void AOWSPlayerController::TravelToLastZoneServer(FString CharacterName)
+{
+	Http = &FHttpModule::Get();
+	Http->SetHttpTimeout(TravelTimeout); //Set timeout
+
+	//UE_LOG(LogTemp, Warning, TEXT("CustomerID: %s"), *RPGAPICustomerKey);
+
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+	Request->OnProcessRequestComplete().BindUObject(this, &AOWSPlayerController::OnTravelToLastZoneServerResponseReceived);
+
+	CharacterName = CharacterName.Replace(TEXT(" "), TEXT("%20"));
+	//This is the url on which to process the request
+	FString url = FString(TEXT("http://" + RPGAPIPath + "/RPGServer/GetServerToConnectTo"));
+
+	FString PostParameters = FString(TEXT("id=")) + CharacterName
+		+ FString(TEXT("&ZoneName=GETLASTZONENAME"))
+		+ FString(TEXT("&CustomerGUID=")) + RPGAPICustomerKey;
+
+	Request->SetURL(url);
+	Request->SetVerb("POST");
+	Request->SetHeader(TEXT("User-Agent"), "X-UnrealEngine-Agent");
+	Request->SetHeader("Content-Type", TEXT("application/x-www-form-urlencoded"));
+	Request->SetContentAsString(PostParameters);
+	Request->ProcessRequest();
+}
+
+void AOWSPlayerController::OnTravelToLastZoneServerResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	FString ServerAndPort;
+
+	if (!GetWorld())
+	{
+		return;
+	}
+
+	UOWSGameInstance* GameInstance = Cast<UOWSGameInstance>(GetWorld()->GetGameInstance());
+
+	if (!GameInstance)
+	{
+		return;
+	}
+
+	if (bWasSuccessful)
+	{
+		TSharedPtr<FJsonObject> JsonObject;
+		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+
+		if (FJsonSerializer::Deserialize(Reader, JsonObject))
+		{
+			FString ServerIP = JsonObject->GetStringField("serverip");
+			FString Port = JsonObject->GetStringField("port");
+
+			if (ServerIP.IsEmpty() || Port.IsEmpty())
+			{
+				UE_LOG(OWS, Error, TEXT("OnTravelToLastZoneServerResponseReceived Cannot Get Server IP and Port!"));
+				return;
+			}
+
+			ServerAndPort = ServerIP + FString(TEXT(":")) + Port.Left(4);
+
+			UE_LOG(OWS, Warning, TEXT("OnTravelToLastZoneServerResponseReceived ServerAndPort: %s"), *ServerAndPort);
+
+			//Encrypt data to send
+			FString IDData = FString::SanitizeFloat(ServerTravelX)
+				+ "|" + FString::SanitizeFloat(ServerTravelY)
+				+ "|" + FString::SanitizeFloat(ServerTravelZ)
+				+ "|" + FString::SanitizeFloat(ServerTravelRX)
+				+ "|" + FString::SanitizeFloat(ServerTravelRY)
+				+ "|" + FString::SanitizeFloat(ServerTravelRZ)
+				+ "|" + FGenericPlatformHttp::UrlEncode(ServerTravelCharacterName)
+				+ "|" + ServerTravelUserSessionGUID;
+			FString EncryptedIDData = GameInstance->EncryptWithAES(IDData, OWSEncryptionKey);
+
+			FString URL = ServerAndPort
+				+ FString(TEXT("?ID=")) + EncryptedIDData;
+
+			TravelToMap(URL, false);
+		}
+		else
+		{
+			UE_LOG(OWS, Error, TEXT("OnTravelToLastZoneServerResponseReceived Server returned no data!"));
+		}
+	}
+	else
+	{
+		UE_LOG(OWS, Error, TEXT("OnTravelToLastZoneServerResponseReceived Error accessing server!"));
+	}
+}
+
+
 
 float AOWSPlayerController::GetPredictionTime()
 {
@@ -836,6 +1040,8 @@ void AOWSPlayerController::OnGetAllCharactersResponseReceived(FHttpRequestPtr Re
 					tempUserCharacter.PremiumCurrency = tempRow->GetNumberField("PremiumCurrency");
 					tempUserCharacter.Score = tempRow->GetNumberField("Score");
 					tempUserCharacter.XP = tempRow->GetNumberField("XP");
+					tempUserCharacter.LastActivity = tempRow->GetStringField("LastActivityString");
+					tempUserCharacter.CreateDate = tempRow->GetStringField("CreateDateString");
 
 					UsersCharactersData.Add(tempUserCharacter);
 				}
@@ -917,22 +1123,28 @@ void AOWSPlayerController::OnCreateCharacterResponseReceived(FHttpRequestPtr Req
 {
 	if (bWasSuccessful)
 	{
+		FString ResponseString = Response->GetContentAsString();
+
 		TSharedPtr<FJsonObject> JsonObject;
-		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseString);
 
 		if (FJsonSerializer::Deserialize(Reader, JsonObject))
 		{
-			FString ErrorMessage = JsonObject->GetStringField("ErrorMessage");
+			FCreateCharacter CreateCharacter;
 
-			if (!ErrorMessage.IsEmpty())
+			if (!FJsonObjectConverter::JsonObjectStringToUStruct(ResponseString, &CreateCharacter, 0, 0))
 			{
-				ErrorCreateCharacter(*ErrorMessage);
+				ErrorCreateCharacter(TEXT("Could not deserialize CreateCharacter JSON to CreateCharacter struct!"));
 				return;
 			}
 
-			FString tempCharacterName = JsonObject->GetStringField("CharacterName");
-						
-			NotifyCreateCharacter(tempCharacterName);
+			if (!CreateCharacter.ErrorMessage.IsEmpty())
+			{
+				ErrorCreateCharacter(*CreateCharacter.ErrorMessage);
+				return;
+			}
+
+			NotifyCreateCharacter(CreateCharacter);
 		}
 		else
 		{
@@ -1013,6 +1225,16 @@ void AOWSPlayerController::OnGetLastZoneServerToTravelToResponseReceived(FHttpRe
 	}
 }
 
+void AOWSPlayerController::NotifyLastZoneServerToTravelTo_Implementation(const FString &ServerAndPort)
+{
+
+}
+
+void AOWSPlayerController::ErrorLastZoneServerToTravelTo_Implementation(const FString &ErrorMsg)
+{
+
+}
+
 
 //Get User Session
 void AOWSPlayerController::GetUserSession(FString UserSessionGUID)
@@ -1048,6 +1270,10 @@ void AOWSPlayerController::OnGetUserSessionResponseReceived(FHttpRequestPtr Requ
 		if (FJsonSerializer::Deserialize(Reader, JsonObject))
 		{
 			FString CharacterName = JsonObject->GetStringField("CharName");
+			FString Email = JsonObject->GetStringField("Email");
+			FString FirstName = JsonObject->GetStringField("FirstName");
+			FString LastName = JsonObject->GetStringField("LastName");
+			FString ZoneName = JsonObject->GetStringField("ZoneName");
 			float X = JsonObject->GetNumberField("X");
 			float Y = JsonObject->GetNumberField("Y");
 			float Z = JsonObject->GetNumberField("Z");
@@ -1063,7 +1289,7 @@ void AOWSPlayerController::OnGetUserSessionResponseReceived(FHttpRequestPtr Requ
 				return;
 			}
 
-			NotifyGetUserSession(CharacterName, X, Y, Z, RX, RY, RZ);
+			NotifyGetUserSession(CharacterName, Email, FirstName, LastName, ZoneName, X, Y, Z, RX, RY, RZ);
 		}
 		else
 		{
@@ -1076,6 +1302,17 @@ void AOWSPlayerController::OnGetUserSessionResponseReceived(FHttpRequestPtr Requ
 		UE_LOG(OWS, Error, TEXT("OnGetUserSessionResponseReceived Error accessing server!"));
 		ErrorGetUserSession(TEXT("Unknown error connecting to server!"));
 	}
+}
+
+void AOWSPlayerController::NotifyGetUserSession_Implementation(const FString &CharacterName, const FString &Email, const FString &FirstName, const FString &LastName, const FString &ZoneName,
+	const float &X, const float &Y, const float &Z, const float &RX, const float &RY, const float &RZ)
+{
+
+}
+
+void AOWSPlayerController::ErrorGetUserSession_Implementation(const FString &ErrorMsg)
+{
+
 }
 
 //UserSessionSetSelectedCharacter
@@ -1663,6 +1900,53 @@ void AOWSPlayerController::OnRemoveCharacterResponseReceived(FHttpRequestPtr Req
 	}
 }
 
+AOWSGameMode* AOWSPlayerController::GetGameMode()
+{
+	return (AOWSGameMode*)GetWorld()->GetAuthGameMode();
+}
+
+void AOWSPlayerController::SynchUpLocalMeshItemsMap()
+{
+	UOWSGameInstance* GameInstance = Cast<UOWSGameInstance>(GetWorld()->GetGameInstance());
+
+	if (!GameInstance)
+		return;
+
+	AOWSGameMode* OWSGameMode = GetGameMode();
+
+	if (!OWSGameMode)
+		return;
+
+	for (auto& MapItem : OWSGameMode->MeshItemsMap)
+	{
+		AddItemToLocalMeshItemsMap(MapItem.Key, MapItem.Value);
+	}
+}
+
+void AOWSPlayerController::AddItemToLocalMeshItemsMap(const FString& ItemName, const int32 ItemMeshID)
+{
+	UOWSGameInstance* GameInstance = Cast<UOWSGameInstance>(GetWorld()->GetGameInstance());
+
+	if (!GameInstance)
+		return;
+
+	if (!LocalMeshItemsMap.Contains(ItemName))
+	{
+		LocalMeshItemsMap.Add(ItemName, ItemMeshID);
+
+		Client_AddItemToLocalMeshItemsMap(ItemName, ItemMeshID);
+	}
+}
+
+void AOWSPlayerController::Client_AddItemToLocalMeshItemsMap_Implementation(const FString& ItemName, const int32 ItemMeshID)
+{
+	UOWSGameInstance* GameInstance = Cast<UOWSGameInstance>(GetWorld()->GetGameInstance());
+
+	if (!GameInstance)
+		return;
+
+	GameInstance->LocalMeshItemsMap.Add(ItemName, ItemMeshID);
+}
 
 void AOWSPlayerController::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {

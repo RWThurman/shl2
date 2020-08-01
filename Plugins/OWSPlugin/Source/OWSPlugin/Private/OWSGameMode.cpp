@@ -25,13 +25,20 @@ AOWSGameMode::AOWSGameMode()
 		RPGAPIPath,
 		GGameIni
 	);
+
+	GConfig->GetString(
+		TEXT("/Script/EngineSettings.GeneralProjectSettings"),
+		TEXT("OWSEncryptionKey"),
+		OWSEncryptionKey,
+		GGameIni
+	);
 }
 
 void AOWSGameMode::StartPlay()
 {
 	Super::StartPlay();
 
-	if (Role == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		//Get a list of all item definitions
 		GetAllInventoryItems();
@@ -79,42 +86,91 @@ FString AOWSGameMode::InitNewPlayer(APlayerController* NewPlayerController, cons
 
 	OWSPlayerController->GetUserSession(UserSessionGUID, PlayerName1, fPLX, fPLY, fPLZ, fPRX, fPRY, fPRZ, ErrorMessage);*/
 
-	UE_LOG(OWS, Warning, TEXT("Raw options: %s"), *Options);
 
-	FString DecodedOptions = FGenericPlatformHttp::UrlDecode(Options);
+	if (!GetWorld())
+	{
+		UE_LOG(OWS, Error, TEXT("OWSGameMode::InitNewPlayer - No UWorld Found!"));
+		return retString;
+	}
 
-	UE_LOG(OWS, Warning, TEXT("Decoded options: %s"), *DecodedOptions);
-	
-	FString PLX = UGameplayStatics::ParseOption(DecodedOptions, TEXT("PLX"));
-	FString PLY = UGameplayStatics::ParseOption(DecodedOptions, TEXT("PLY"));
-	FString PLZ = UGameplayStatics::ParseOption(DecodedOptions, TEXT("PLZ"));
-	FString PRX = UGameplayStatics::ParseOption(DecodedOptions, TEXT("PRX"));
-	FString PRY = UGameplayStatics::ParseOption(DecodedOptions, TEXT("PRY"));
-	FString PRZ = UGameplayStatics::ParseOption(DecodedOptions, TEXT("PRZ"));
-	FString PlayerName1 = UGameplayStatics::ParseOption(DecodedOptions, TEXT("Player"));
+	UOWSGameInstance* GameInstance = Cast<UOWSGameInstance>(GetWorld()->GetGameInstance());
 
-	UE_LOG(OWS, Warning, TEXT("PlayerName: %s"), *PlayerName1);
+	if (!GameInstance)
+	{
+		UE_LOG(OWS, Error, TEXT("OWSGameMode::InitNewPlayer - No Game Instance Found!"));
+		return retString;
+	}
 
-	FString OWSDefaultPawnClass = UGameplayStatics::ParseOption(DecodedOptions, TEXT("DPC"));
+	FString PLX = "";
+	FString PLY = "";
+	FString PLZ = "";
+	FString PRX = "";
+	FString PRY = "";
+	FString PRZ = "";
+	FString PlayerName1 = "";
+	FString UserSessionGUID = "";
 
-	if (PlayerName1 == "")
+	FString EncryptedIDData = UGameplayStatics::ParseOption(Options, TEXT("ID"));
+
+	if (!EncryptedIDData.IsEmpty())
+	{
+
+		FString IDData = GameInstance->DecryptWithAES(EncryptedIDData, OWSEncryptionKey);
+
+		UE_LOG(OWS, Warning, TEXT("Raw options: %s"), *IDData);
+
+		FString DecodedIDData = FGenericPlatformHttp::UrlDecode(IDData);
+
+		UE_LOG(OWS, Warning, TEXT("Decoded options: %s"), *DecodedIDData);
+
+		/*
+
+		FString PLX = UGameplayStatics::ParseOption(DecodedOptions, TEXT("PLX"));
+		FString PLY = UGameplayStatics::ParseOption(DecodedOptions, TEXT("PLY"));
+		FString PLZ = UGameplayStatics::ParseOption(DecodedOptions, TEXT("PLZ"));
+		FString PRX = UGameplayStatics::ParseOption(DecodedOptions, TEXT("PRX"));
+		FString PRY = UGameplayStatics::ParseOption(DecodedOptions, TEXT("PRY"));
+		FString PRZ = UGameplayStatics::ParseOption(DecodedOptions, TEXT("PRZ"));
+		FString PlayerName1 = UGameplayStatics::ParseOption(DecodedOptions, TEXT("Player"));
+		FString UserSessionGUID = UGameplayStatics::ParseOption(DecodedOptions, TEXT("GUID"));*/
+
+		TArray<FString> SplitArray;
+		DecodedIDData.ParseIntoArray(SplitArray, TEXT("|"), false);
+
+		PLX = SplitArray[0];
+		PLY = SplitArray[1];
+		PLZ = SplitArray[2];
+		PRX = SplitArray[3];
+		PRY = SplitArray[4];
+		PRZ = SplitArray[5];
+		PlayerName1 = SplitArray[6];
+		UserSessionGUID = SplitArray[7];
+
+		UE_LOG(OWS, Warning, TEXT("PlayerName: %s"), *PlayerName1);
+		UE_LOG(OWS, Warning, TEXT("UserSessionGUID: %s"), *UserSessionGUID);
+
+
+		//FString OWSDefaultPawnClass = UGameplayStatics::ParseOption(DecodedOptions, TEXT("DPC"));
+
+	}
+	else
 	{
 		PlayerName1 = DebugCharacterName;
 	}
 
-	float fPLX = FCString::Atof(*PLX);
-	float fPLY = FCString::Atof(*PLY);
-	float fPLZ = FCString::Atof(*PLZ);
-	float fPRX = FCString::Atof(*PRX);
-	float fPRY = FCString::Atof(*PRY);
-	float fPRZ = FCString::Atof(*PRZ);
+	AOWSPlayerState* NewPlayerState = CastChecked<AOWSPlayerState>(NewPlayerController->PlayerState);
 
-	UE_LOG(OWS, Warning, TEXT("Incoming start location is %f, %f, %f"), fPLX, fPLY, fPLZ);
-
-	AOWSPlayerState* NewPlayerState = CastChecked<AOWSPlayerState>(NewPlayerController->PlayerState);	
-
-	if (fPLX != 0 || fPLY != 0 || fPLZ != 0)
+	if (!PLX.IsEmpty() && !PLY.IsEmpty() && !PLZ.IsEmpty())
 	{
+		float fPLX = FCString::Atof(*PLX);
+		float fPLY = FCString::Atof(*PLY);
+		float fPLZ = FCString::Atof(*PLZ);
+		float fPRX = FCString::Atof(*PRX);
+		float fPRY = FCString::Atof(*PRY);
+		float fPRZ = FCString::Atof(*PRZ);
+
+		UE_LOG(OWS, Warning, TEXT("Incoming start location is %f, %f, %f"), fPLX, fPLY, fPLZ);
+
 		NewPlayerState->PlayerStartLocation.X = fPLX;
 		NewPlayerState->PlayerStartLocation.Y = fPLY;
 		NewPlayerState->PlayerStartLocation.Z = fPLZ;
@@ -133,7 +189,8 @@ FString AOWSGameMode::InitNewPlayer(APlayerController* NewPlayerController, cons
 	}
 
 	NewPlayerState->SetPlayerName(PlayerName1);
-	NewPlayerState->DefaultPawnClass = OWSDefaultPawnClass;
+	NewPlayerState->UserSessionGUID = UserSessionGUID;
+	//NewPlayerState->DefaultPawnClass = OWSDefaultPawnClass;
 
 	return retString;
 }
@@ -152,7 +209,7 @@ APawn * AOWSGameMode::SpawnDefaultPawnFor_Implementation(AController * NewPlayer
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnInfo.Owner = this;
-	SpawnInfo.Instigator = Instigator;
+	SpawnInfo.Instigator = GetInstigator();
 	SpawnInfo.ObjectFlags |= RF_Transient;
 
 	SpawnInfo.bDeferConstruction = false;
@@ -252,6 +309,7 @@ void AOWSGameMode::OnGetAllInventoryItemsResponseReceived(FHttpRequestPtr Reques
 					tempInventoryItem.PremiumCurrencyPrice = tempRow->GetIntegerField("PremiumCurrencyPrice");
 					tempInventoryItem.FreeCurrencyPrice = tempRow->GetIntegerField("FreeCurrencyPrice");
 
+					tempInventoryItem.ItemMeshID = tempRow->GetIntegerField("ItemMeshID");
 					tempInventoryItem.WeaponActorClassPath = tempRow->GetStringField("WeaponActorClass");
 					tempInventoryItem.StaticMeshPath = tempRow->GetStringField("StaticMesh");
 					tempInventoryItem.SkeletalMeshPath = tempRow->GetStringField("SkeletalMesh");
@@ -397,7 +455,38 @@ void AOWSGameMode::SaveAllPlayerLocations()
 	{
 		if (NextSaveGroupIndex == PlayerIndex % SplitSaveIntoHowManyGroups)
 		{
-			APawn* MyPawn = Iterator->Get()->GetPawn();
+			AOWSPlayerController* PlayerControllerToSave = Cast<AOWSPlayerController>(Iterator->Get());
+
+			if (PlayerControllerToSave)
+			{
+				APawn* MyPawn = Iterator->Get()->GetPawn();
+
+				if (MyPawn)
+				{
+					PlayerControllerToSave->LastCharacterLocation = MyPawn->GetActorLocation();
+					PlayerControllerToSave->LastCharacterRotation = MyPawn->GetActorRotation();
+				}
+
+				FVector PawnLocation = PlayerControllerToSave->LastCharacterLocation;
+				FRotator PawnRotation = PlayerControllerToSave->LastCharacterRotation;
+
+				DataToSave.Append(PlayerControllerToSave->PlayerState->GetPlayerName());
+				DataToSave.Append(":");
+				DataToSave.Append(FString::SanitizeFloat(PawnLocation.X));
+				DataToSave.Append(":");
+				DataToSave.Append(FString::SanitizeFloat(PawnLocation.Y));
+				DataToSave.Append(":");
+				DataToSave.Append(FString::SanitizeFloat(PawnLocation.Z));
+				DataToSave.Append(":");
+				DataToSave.Append(FString::SanitizeFloat(PawnRotation.Roll));
+				DataToSave.Append(":");
+				DataToSave.Append(FString::SanitizeFloat(PawnRotation.Pitch));
+				DataToSave.Append(":");
+				DataToSave.Append(FString::SanitizeFloat(PawnRotation.Yaw));
+				DataToSave.Append("|");
+			}
+
+			/*APawn* MyPawn = Iterator->Get()->GetPawn();
 
 			if (MyPawn)
 			{
@@ -423,7 +512,7 @@ void AOWSGameMode::SaveAllPlayerLocations()
 					DataToSave.Append(FString::SanitizeFloat(PawnRotation.Yaw));
 					DataToSave.Append("|");
 				}
-			}
+			}*/
 		}
 
 		//UE_LOG(OWS, Error, TEXT("PlayerController: %s - %f, %f, %f"), *Iterator->Get()->PlayerState->PlayerName, PawnLocation.X, PawnLocation.Y, PawnLocation.Z);
@@ -731,7 +820,6 @@ void AOWSGameMode::UpdateNumberOfPlayers()
 	Request->ProcessRequest();
 }
 
-
 void AOWSGameMode::OnUpdateNumberOfPlayersResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if (bWasSuccessful)
@@ -797,6 +885,19 @@ void AOWSGameMode::OnGetCurrentWorldTimeResponseReceived(FHttpRequestPtr Request
 FString AOWSGameMode::GetAddressURLAndPort()
 {
 	return GetWorld()->GetAddressURL();
+}
+
+void AOWSGameMode::AddItemMeshToAllPlayers(const FString& ItemName, const int32 ItemMeshID)
+{
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		AOWSPlayerController* MyPlayerController = Cast<AOWSPlayerController>(Iterator->Get());
+
+		if (MyPlayerController)
+		{
+			MyPlayerController->AddItemToLocalMeshItemsMap(ItemName, ItemMeshID);
+		}
+	}
 }
 
 FInventoryItemStruct& AOWSGameMode::FindItemDefinition(FString ItemName)

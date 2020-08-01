@@ -90,9 +90,74 @@ struct FUserCharacter
 		int32 Score;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
 		int32 XP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		FString LastActivity;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		FString CreateDate;
 	
 };
 
+USTRUCT(BlueprintType, Blueprintable)
+struct FCreateCharacter
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		bool Success;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		FString ErrorMessage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		FString CharacterName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		FString ClassName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		int32 CharacterLevel;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		FString StartingMapName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		float X;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		float Y;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		float Z;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		float RX;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		float RY;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		float RZ;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		int32 TeamNumber;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		int32 Gold;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		int32 Silver;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		int32 Copper;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		int32 FreeCurrency;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		int32 PremiumCurrency;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		int32 Fame;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		int32 Alignment;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		int32 Score;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		int32 Gender;	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		int32 XP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		int32 Size;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		float Weight;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		FString LastActivity;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+		FString CreateDate;
+
+};
 
 /**
  * 
@@ -116,6 +181,44 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Config")
 		FString OWS2APIPath = "";
+
+	UPROPERTY(BlueprintReadWrite, Category = "Config")
+		FString OWSEncryptionKey = "";
+
+	AOWSGameMode* GetGameMode();
+
+	UFUNCTION(BlueprintCallable, Category = "Travel")
+		void SetSelectedCharacterAndConnectToLastZone(FString UserSessionGUID, FString SelectedCharacterName);
+
+		void OnSetSelectedCharacterAndConnectToLastZoneResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+
+		void TravelToLastZoneServer(FString CharacterName);
+
+		void OnTravelToLastZoneServerResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+
+		FString ServerTravelUserSessionGUID;
+		FString ServerTravelCharacterName;
+		float ServerTravelX;
+		float ServerTravelY;
+		float ServerTravelZ;
+		float ServerTravelRX;
+		float ServerTravelRY;
+		float ServerTravelRZ;
+
+	FVector LastCharacterLocation;
+	FRotator LastCharacterRotation;
+
+	UPROPERTY()
+		TMap<FString, int32> LocalMeshItemsMap;
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+		void SynchUpLocalMeshItemsMap();
+
+	UFUNCTION()
+		void AddItemToLocalMeshItemsMap(const FString& ItemName, const int32 ItemMeshID);
+
+	UFUNCTION(Client, Reliable)
+		void Client_AddItemToLocalMeshItemsMap(const FString& ItemName, const int32 ItemMeshID);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Selection")
 		AOWSCharacter* SelectedCharacter;
@@ -272,7 +375,7 @@ public:
 	void OnCreateCharacterResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Login")
-		void NotifyCreateCharacter(const FString &CharacterName);
+		void NotifyCreateCharacter(const FCreateCharacter &CreateCharacterData);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Login")
 		void ErrorCreateCharacter(const FString &ErrorMsg);
@@ -283,9 +386,9 @@ public:
 
 	void OnGetLastZoneServerToTravelToResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Travel")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Travel")
 		void NotifyLastZoneServerToTravelTo(const FString &ServerAndPort);
-	UFUNCTION(BlueprintImplementableEvent, Category = "Travel")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Travel")
 		void ErrorLastZoneServerToTravelTo(const FString &ErrorMsg);
 
 	//Get User Session
@@ -294,9 +397,10 @@ public:
 
 	void OnGetUserSessionResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Login")
-		void NotifyGetUserSession(const FString &CharacterName, const float &X, const float &Y, const float &Z, const float &RX, const float &RY, const float &RZ);
-	UFUNCTION(BlueprintImplementableEvent, Category = "Login")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Login")
+		void NotifyGetUserSession(const FString &CharacterName, const FString &Email, const FString &FirstName, const FString &LastName, const FString &ZoneName, 
+			const float &X, const float &Y, const float &Z, const float &RX, const float &RY, const float &RZ);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Login")
 		void ErrorGetUserSession(const FString &ErrorMsg);
 
 	//UserSession Set Selected Character	

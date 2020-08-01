@@ -77,7 +77,7 @@ bool UOWSProjectileMovementComponent::MoveUpdatedComponentImpl(const FVector& De
 			FRotator RelativeRotation;
 
 			FNewableScopedMovementUpdate(USceneComponent* Component, EScopedUpdate::Type ScopeBehavior = EScopedUpdate::DeferredUpdates)
-				: FScopedMovementUpdate(Component, ScopeBehavior), RelativeLocation(Component->RelativeLocation), RelativeRotation(Component->RelativeRotation)
+				: FScopedMovementUpdate(Component, ScopeBehavior), RelativeLocation(Component->GetRelativeLocation()), RelativeRotation(Component->GetRelativeRotation())
 			{}
 
 			// allow new and delete on FScopedMovementUpdate so we can use a dynamic number of elements
@@ -109,7 +109,9 @@ bool UOWSProjectileMovementComponent::MoveUpdatedComponentImpl(const FVector& De
 		{
 			// hack so InternalSetWorldLocationAndRotation() counts the component as moved (which will also clobber this hacked value)
 			// otherwise it will pull the updated transform from the parent above and think nothing has happened, which prevents overlaps from working
-			AddlUpdatedComponents[i]->RelativeLocation.Z += 0.1f;
+			FVector ComponentRelativeLocation = AddlUpdatedComponents[i]->GetRelativeLocation();
+			ComponentRelativeLocation.Z += 0.1f;
+			AddlUpdatedComponents[i]->SetRelativeLocation(ComponentRelativeLocation);
 
 			FHitResult NewHit;
 			AddlUpdatedComponents[i]->MoveComponent(Delta, AddlUpdatedComponents[i]->GetComponentToWorld().GetRotation().Rotator() + RotChange, bSweep, &NewHit, MoveComponentFlags);

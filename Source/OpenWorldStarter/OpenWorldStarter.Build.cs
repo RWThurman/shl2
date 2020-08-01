@@ -8,7 +8,13 @@ public class OpenWorldStarter : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "OWSPlugin", "AIModule" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core",
+            "CoreUObject",
+            "Engine",
+            "OWSPlugin",
+            "AIModule",
+            "Json",
+            "JsonUtilities" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

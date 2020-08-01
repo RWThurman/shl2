@@ -41,11 +41,11 @@ UOWSAttributeSet::UOWSAttributeSet(const FObjectInitializer& ObjectInitializer)
 
 bool UOWSAttributeSet::PreGameplayEffectExecute(struct FGameplayEffectModCallbackData &Data)
 {
-	static UProperty *HealthProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Health));
-	static UProperty *DamageProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Damage));
-	static UProperty* HealingProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Healing));
+	static FProperty *HealthProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Health));
+	static FProperty *DamageProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Damage));
+	static FProperty* HealingProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Healing));
 
-	UProperty* ModifiedProperty = Data.EvaluatedData.Attribute.GetUProperty();
+	FProperty* ModifiedProperty = Data.EvaluatedData.Attribute.GetUProperty();
 
 	// Is Damage about to be applied?
 	if (DamageProperty == ModifiedProperty)
@@ -173,14 +173,14 @@ bool UOWSAttributeSet::PreGameplayEffectExecute(struct FGameplayEffectModCallbac
 
 void UOWSAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData &Data)
 {
-	static UProperty* DamageProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Damage));
-	static UProperty* HealingProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Healing));
-	static UProperty* EnergyProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Energy));
-	static UProperty* ManaProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Mana));
-	static UProperty* FatigueProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Fatigue));
-	static UProperty* StaminaProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Stamina));
-	static UProperty* EnduranceProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Endurance));
-	UProperty* ModifiedProperty = Data.EvaluatedData.Attribute.GetUProperty();
+	static FProperty* DamageProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Damage));
+	static FProperty* HealingProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Healing));
+	static FProperty* EnergyProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Energy));
+	static FProperty* ManaProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Mana));
+	static FProperty* FatigueProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Fatigue));
+	static FProperty* StaminaProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Stamina));
+	static FProperty* EnduranceProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Endurance));
+	FProperty* ModifiedProperty = Data.EvaluatedData.Attribute.GetUProperty();
 
 	//Data.EffectSpec.CapturedTargetTags
 	

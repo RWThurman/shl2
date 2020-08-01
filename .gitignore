@@ -12,3 +12,16 @@ Saved
 *.suo
 *.xcodeproj
 *.xcworkspace
+/Build
+Build
+/Content/Developers
+/Content/SampleMap
+/Content/ParagonSerath
+/Content/ParagonProps
+/Content/KiteDemo
+/Plugins/OWSPlugin/Source/OWSPlugin/Private/OWSCharacter.cpp.bak
+/Plugins/OWSPlugin/Source/OWSPlugin/Private/OWSPlayerController.cpp.bak
+/Plugins/OWSPlugin/Source/OWSPlugin/Public/OWSCharacter.h.bak
+/Plugins/OWSPlugin/Source/OWSPlugin/Public/OWSPlayerController.h.bak
+/RPGWorldServer/RPGWorldServer.application
+/RPGWorldServer/RPGWorldServer.pdb

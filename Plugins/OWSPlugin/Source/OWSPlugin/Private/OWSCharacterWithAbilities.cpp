@@ -25,6 +25,7 @@ AOWSCharacterWithAbilities::AOWSCharacterWithAbilities(const class FObjectInitia
 {
 	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(AOWSCharacterWithAbilities::AbilitySystemComponentName);
 	AbilitySystem->SetIsReplicated(true);
+	AbilitySystem->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
 	SpellAbilityHandles.SetNum(22, false);
 	WeaponAbilityHandles.SetNum(22, false);
@@ -39,7 +40,7 @@ void AOWSCharacterWithAbilities::BeginPlay()
 
 	//OWSAttributes = NewObject<UOWSAttributeSet>();
 	
-	if (Role == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		if (IsAMob)
 		{
@@ -329,7 +330,7 @@ void AOWSCharacterWithAbilities::HandleProjectileDamage(AOWSAdvancedProjectile* 
 		return;
 	}
 
-	if (Role == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		UE_LOG(OWS, Verbose, TEXT("Server: HandleProjectileDamage"));
 		if (GetAbilitySystemComponent() != nullptr)
@@ -483,9 +484,9 @@ void AOWSCharacterWithAbilities::OnGetCharacterStatsResponseReceived(FHttpReques
 
 void AOWSCharacterWithAbilities::LoadAttributesFromJSON(TSharedPtr<FJsonObject> JsonObject)
 {
-	static UProperty* ThirstProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Thirst));
+	static FProperty* ThirstProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Thirst));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(ThirstProperty), JsonObject->GetNumberField("Thirst"));
-	static UProperty* HungerProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Hunger));
+	static FProperty* HungerProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Hunger));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(HungerProperty), JsonObject->GetNumberField("Hunger"));
 
 	OWSAttributes->SetMaxHealth(JsonObject->GetNumberField("MaxHealth"));
@@ -501,115 +502,115 @@ void AOWSCharacterWithAbilities::LoadAttributesFromJSON(TSharedPtr<FJsonObject> 
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(HealthRegenRateProperty), JsonObject->GetNumberField("HealthRegenRate"));
 	*/
 
-	static UProperty* MaxManaProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, MaxMana));
+	static FProperty* MaxManaProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, MaxMana));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(MaxManaProperty), JsonObject->GetNumberField("MaxMana"));
-	static UProperty* ManaProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Mana));
+	static FProperty* ManaProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Mana));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(ManaProperty), JsonObject->GetNumberField("Mana"));
-	static UProperty* ManaRegenRateProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, ManaRegenRate));
+	static FProperty* ManaRegenRateProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, ManaRegenRate));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(ManaRegenRateProperty), JsonObject->GetNumberField("ManaRegenRate"));
 
-	static UProperty* MaxEnergyProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, MaxEnergy));
+	static FProperty* MaxEnergyProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, MaxEnergy));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(MaxEnergyProperty), JsonObject->GetNumberField("MaxEnergy"));
-	static UProperty* EnergyProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Energy));
+	static FProperty* EnergyProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Energy));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(EnergyProperty), JsonObject->GetNumberField("Energy"));
-	static UProperty* EnergyRegenRateProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, EnergyRegenRate));
+	static FProperty* EnergyRegenRateProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, EnergyRegenRate));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(EnergyRegenRateProperty), JsonObject->GetNumberField("EnergyRegenRate"));
 
-	static UProperty* MaxFatigueProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, MaxFatigue));
+	static FProperty* MaxFatigueProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, MaxFatigue));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(MaxFatigueProperty), JsonObject->GetNumberField("MaxFatigue"));
-	static UProperty* FatigueProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Fatigue));
+	static FProperty* FatigueProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Fatigue));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(FatigueProperty), JsonObject->GetNumberField("Fatigue"));
-	static UProperty* FatigueRegenRateProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, FatigueRegenRate));
+	static FProperty* FatigueRegenRateProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, FatigueRegenRate));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(FatigueRegenRateProperty), JsonObject->GetNumberField("FatigueRegenRate"));
 
-	static UProperty* MaxStaminaProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, MaxStamina));
+	static FProperty* MaxStaminaProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, MaxStamina));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(MaxStaminaProperty), JsonObject->GetNumberField("MaxStamina"));
-	static UProperty* StaminaProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Stamina));
+	static FProperty* StaminaProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Stamina));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(StaminaProperty), JsonObject->GetNumberField("Stamina"));
-	static UProperty* StaminaRegenRateProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, StaminaRegenRate));
+	static FProperty* StaminaRegenRateProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, StaminaRegenRate));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(StaminaRegenRateProperty), JsonObject->GetNumberField("StaminaRegenRate"));
 
-	static UProperty* MaxEnduranceProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, MaxEndurance));
+	static FProperty* MaxEnduranceProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, MaxEndurance));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(MaxEnduranceProperty), JsonObject->GetNumberField("MaxEndurance"));
-	static UProperty* EnduranceProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Endurance));
+	static FProperty* EnduranceProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Endurance));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(EnduranceProperty), JsonObject->GetNumberField("Endurance"));
-	static UProperty* EnduranceRegenRateProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, EnduranceRegenRate));
+	static FProperty* EnduranceRegenRateProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, EnduranceRegenRate));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(EnduranceRegenRateProperty), JsonObject->GetNumberField("EnduranceRegenRate"));
 
-	static UProperty* StrengthProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Strength));
+	static FProperty* StrengthProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Strength));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(StrengthProperty), JsonObject->GetNumberField("Strength"));
-	static UProperty* DexterityProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Dexterity));
+	static FProperty* DexterityProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Dexterity));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(DexterityProperty), JsonObject->GetNumberField("Dexterity"));
-	static UProperty* ConstitutionProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Constitution));
+	static FProperty* ConstitutionProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Constitution));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(ConstitutionProperty), JsonObject->GetNumberField("Constitution"));
-	static UProperty* IntellectProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Intellect));
+	static FProperty* IntellectProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Intellect));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(IntellectProperty), JsonObject->GetNumberField("Intellect"));
-	static UProperty* WisdomProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Wisdom));
+	static FProperty* WisdomProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Wisdom));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(WisdomProperty), JsonObject->GetNumberField("Wisdom"));
-	static UProperty* CharismaProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Charisma));
+	static FProperty* CharismaProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Charisma));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(CharismaProperty), JsonObject->GetNumberField("Charisma"));
-	static UProperty* AgilityProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Agility));
+	static FProperty* AgilityProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Agility));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(AgilityProperty), JsonObject->GetNumberField("Agility"));
-	static UProperty* SpiritProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Spirit));
+	static FProperty* SpiritProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Spirit));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(SpiritProperty), JsonObject->GetNumberField("Spirit"));
-	static UProperty* MagicProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Magic));
+	static FProperty* MagicProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Magic));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(MagicProperty), JsonObject->GetNumberField("Magic"));
-	static UProperty* FortitudeProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Fortitude));
+	static FProperty* FortitudeProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Fortitude));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(FortitudeProperty), JsonObject->GetNumberField("Fortitude"));
-	static UProperty* ReflexProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Reflex));
+	static FProperty* ReflexProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Reflex));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(ReflexProperty), JsonObject->GetNumberField("Reflex"));
-	static UProperty* WillpowerProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Willpower));
+	static FProperty* WillpowerProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Willpower));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(WillpowerProperty), JsonObject->GetNumberField("Willpower"));
 
-	static UProperty* BaseAttackProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, BaseAttack));
+	static FProperty* BaseAttackProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, BaseAttack));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(BaseAttackProperty), JsonObject->GetNumberField("BaseAttack"));
-	static UProperty* BaseAttackBonusProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, BaseAttackBonus));
+	static FProperty* BaseAttackBonusProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, BaseAttackBonus));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(BaseAttackBonusProperty), JsonObject->GetNumberField("BaseAttackBonus"));
-	static UProperty* AttackPowerProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, AttackPower));
+	static FProperty* AttackPowerProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, AttackPower));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(AttackPowerProperty), JsonObject->GetNumberField("AttackPower"));
-	static UProperty* AttackSpeedProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, AttackSpeed));
+	static FProperty* AttackSpeedProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, AttackSpeed));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(AttackSpeedProperty), JsonObject->GetNumberField("AttackSpeed"));
-	static UProperty* CritChanceProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, CritChance));
+	static FProperty* CritChanceProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, CritChance));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(CritChanceProperty), JsonObject->GetNumberField("CritChance"));
-	static UProperty* CritMultiplierProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, CritMultiplier));
+	static FProperty* CritMultiplierProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, CritMultiplier));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(CritMultiplierProperty), JsonObject->GetNumberField("CritMultiplier"));
-	static UProperty* HasteProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Haste));
+	static FProperty* HasteProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Haste));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(HasteProperty), JsonObject->GetNumberField("Haste"));
-	static UProperty* SpellPowerProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, SpellPower));
+	static FProperty* SpellPowerProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, SpellPower));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(SpellPowerProperty), JsonObject->GetNumberField("SpellPower"));
-	static UProperty* SpellPenetrationProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, SpellPenetration));
+	static FProperty* SpellPenetrationProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, SpellPenetration));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(SpellPenetrationProperty), JsonObject->GetNumberField("SpellPenetration"));
-	static UProperty* DefenseProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Defense));
+	static FProperty* DefenseProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Defense));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(DefenseProperty), JsonObject->GetNumberField("Defense"));
-	static UProperty* DodgeProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Dodge));
+	static FProperty* DodgeProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Dodge));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(DodgeProperty), JsonObject->GetNumberField("Dodge"));
-	static UProperty* ParryProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Parry));
+	static FProperty* ParryProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Parry));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(ParryProperty), JsonObject->GetNumberField("Parry"));
-	static UProperty* AvoidanceProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Avoidance));
+	static FProperty* AvoidanceProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Avoidance));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(AvoidanceProperty), JsonObject->GetNumberField("Avoidance"));
-	static UProperty* VersatilityProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Versatility));
+	static FProperty* VersatilityProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Versatility));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(VersatilityProperty), JsonObject->GetNumberField("Versatility"));
-	static UProperty* MultishotProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Multishot));
+	static FProperty* MultishotProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Multishot));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(MultishotProperty), JsonObject->GetNumberField("Multishot"));
-	static UProperty* InitiativeProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Initiative));
+	static FProperty* InitiativeProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Initiative));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(InitiativeProperty), JsonObject->GetNumberField("Initiative"));
-	static UProperty* NaturalArmorProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, NaturalArmor));
+	static FProperty* NaturalArmorProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, NaturalArmor));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(NaturalArmorProperty), JsonObject->GetNumberField("NaturalArmor"));
-	static UProperty* PhysicalArmorProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, PhysicalArmor));
+	static FProperty* PhysicalArmorProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, PhysicalArmor));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(PhysicalArmorProperty), JsonObject->GetNumberField("PhysicalArmor"));
-	static UProperty* BonusArmorProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, BonusArmor));
+	static FProperty* BonusArmorProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, BonusArmor));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(BonusArmorProperty), JsonObject->GetNumberField("BonusArmor"));
-	static UProperty* ForceArmorProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, ForceArmor));
+	static FProperty* ForceArmorProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, ForceArmor));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(ForceArmorProperty), JsonObject->GetNumberField("ForceArmor"));
-	static UProperty* MagicArmorProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, MagicArmor));
+	static FProperty* MagicArmorProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, MagicArmor));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(MagicArmorProperty), JsonObject->GetNumberField("MagicArmor"));
-	static UProperty* ResistanceProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Resistance));
+	static FProperty* ResistanceProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Resistance));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(ResistanceProperty), JsonObject->GetNumberField("Resistance"));
-	static UProperty* ReloadSpeedProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, ReloadSpeed));
+	static FProperty* ReloadSpeedProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, ReloadSpeed));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(ReloadSpeedProperty), JsonObject->GetNumberField("ReloadSpeed"));
-	static UProperty* RangeProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Range));
+	static FProperty* RangeProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Range));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(RangeProperty), JsonObject->GetNumberField("Range"));
-	static UProperty* SpeedProperty = FindFieldChecked<UProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Speed));
+	static FProperty* SpeedProperty = FindFieldChecked<FProperty>(UOWSAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UOWSAttributeSet, Speed));
 	GetAbilitySystemComponent()->SetNumericAttributeBase(FGameplayAttribute(SpeedProperty), JsonObject->GetNumberField("Speed"));
 }
 

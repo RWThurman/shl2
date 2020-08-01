@@ -131,7 +131,7 @@ void UOWSCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)//Cli
 class FNetworkPredictionData_Client* UOWSCharacterMovementComponent::GetPredictionData_Client() const
 {
 	check(PawnOwner != NULL);
-	check(PawnOwner->Role < ROLE_Authority);
+	check(PawnOwner->GetLocalRole() < ROLE_Authority);
 
 	if (!ClientPredictionData)
 	{

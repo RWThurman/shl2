@@ -74,27 +74,33 @@ bool UOWSInventory::AddItemToInventory(AOWSInventoryItem* Item)
 		FInventoryItemStruct& ItemDefinition = OWSGameMode->FindItemDefinition(Item->ItemName);
 
 		bool bWasItemAdded = OwningPlayerCharacter->AddItemToLocalInventoryItems(Item->ItemName, ItemDefinition.ItemCanStack, ItemDefinition.IsUsable, ItemDefinition.IsConsumedOnUse, ItemDefinition.ItemTypeID,
-			ItemDefinition.TextureToUseForIcon, ItemDefinition.IconSlotWidth, ItemDefinition.IconSlotHeight);
+			ItemDefinition.TextureToUseForIcon, ItemDefinition.IconSlotWidth, ItemDefinition.IconSlotHeight, ItemDefinition.ItemMeshID, ItemDefinition.CustomData);
 
 		if (bWasItemAdded)
 		{
+			UE_LOG(OWS, Warning, TEXT("UOWSInventory - AddItemToInventory - AddItemMeshToAllPlayers Called"));
+			OwningPlayerCharacter->GetGameMode()->AddItemMeshToAllPlayers(Item->ItemName, ItemDefinition.ItemMeshID);
+
 			OwningPlayerCharacter->Client_AddItemToLocalInventoryItems(Item->ItemName, ItemDefinition.ItemCanStack, ItemDefinition.IsUsable, ItemDefinition.IsConsumedOnUse, ItemDefinition.ItemTypeID,
-				ItemDefinition.TextureToUseForIcon, ItemDefinition.IconSlotWidth, ItemDefinition.IconSlotHeight);
+				ItemDefinition.TextureToUseForIcon, ItemDefinition.IconSlotWidth, ItemDefinition.IconSlotHeight, ItemDefinition.ItemMeshID, ItemDefinition.CustomData);
 		}
 
 		//Add item to server side inventory
 		OwningPlayerCharacter->AddItemToInventory(InventoryName.ToString(), Item->ItemName, Slot, Item->StackSize, Item->NumberOfUsesLeft, Item->Condition, UniqueItemGUID);
 		//Call the Owning client to add the item locally
 		OwningPlayerCharacter->Client_AddItemToInventory(InventoryName, Item->ItemName, Item->StackSize, Slot, Item->NumberOfUsesLeft, Item->Condition,
-			Item->PerInstanceCustomData, UniqueItemGUID);
+			Item->PerInstanceCustomData, UniqueItemGUID, Item->ItemMeshID);
 		return true;
 	}
 
 	return false;
 }
 
+//Can only be called on the Server side
 void UOWSInventory::AddItemToSlot(AOWSInventoryItem* Item, int32 Slot)
 {	
+	UE_LOG(OWS, Warning, TEXT("UOWSInventory - AddItemToSlot Started"));
+
 	AddItemToSlot_Internal(Item, Slot);
 
 	//Replicate item definition if it does not already exist
@@ -106,17 +112,20 @@ void UOWSInventory::AddItemToSlot(AOWSInventoryItem* Item, int32 Slot)
 	FInventoryItemStruct& ItemDefinition = OWSGameMode->FindItemDefinition(Item->ItemName);
 
 	bool bWasItemAdded = OwningPlayerCharacter->AddItemToLocalInventoryItems(Item->ItemName, ItemDefinition.ItemCanStack, ItemDefinition.IsUsable, ItemDefinition.IsConsumedOnUse, ItemDefinition.ItemTypeID,
-		ItemDefinition.TextureToUseForIcon, ItemDefinition.IconSlotWidth, ItemDefinition.IconSlotHeight);
+		ItemDefinition.TextureToUseForIcon, ItemDefinition.IconSlotWidth, ItemDefinition.IconSlotHeight, ItemDefinition.ItemMeshID, ItemDefinition.CustomData);
 
 	if (bWasItemAdded)
 	{
+		UE_LOG(OWS, Warning, TEXT("UOWSInventory - AddItemToSlot - AddItemMeshToAllPlayers Called"));
+		OwningPlayerCharacter->GetGameMode()->AddItemMeshToAllPlayers(Item->ItemName, ItemDefinition.ItemMeshID);
+
 		OwningPlayerCharacter->Client_AddItemToLocalInventoryItems(Item->ItemName, ItemDefinition.ItemCanStack, ItemDefinition.IsUsable, ItemDefinition.IsConsumedOnUse, ItemDefinition.ItemTypeID,
-			ItemDefinition.TextureToUseForIcon, ItemDefinition.IconSlotWidth, ItemDefinition.IconSlotHeight);
+			ItemDefinition.TextureToUseForIcon, ItemDefinition.IconSlotWidth, ItemDefinition.IconSlotHeight, ItemDefinition.ItemMeshID, ItemDefinition.CustomData);
 	}
 
 	//Call the Owning client to add the item locally
 	OwningPlayerCharacter->Client_AddItemToInventory(InventoryName, Item->ItemName, Item->StackSize, Slot, Item->NumberOfUsesLeft, Item->Condition,
-		Item->PerInstanceCustomData, Item->UniqueItemGUID);
+		Item->PerInstanceCustomData, Item->UniqueItemGUID, Item->ItemMeshID);
 }
 
 void UOWSInventory::AddItemToSlot_Internal(AOWSInventoryItem* Item, int32 Slot)
@@ -142,6 +151,8 @@ void UOWSInventory::AddItemToSlot_Internal(AOWSInventoryItem* Item, int32 Slot)
 
 void UOWSInventory::AddItemsFromInventoryItemStruct(const TArray<FInventoryItemStruct>& ItemsToAdd)
 {
+	UE_LOG(OWS, Warning, TEXT("UOWSInventory - AddItemsFromInventoryItemStruct"));
+
 	for (auto CurItem : ItemsToAdd)
 	{
 		AOWSInventoryItem* ItemToAdd = NewObject<AOWSInventoryItem>();
@@ -151,6 +162,7 @@ void UOWSInventory::AddItemsFromInventoryItemStruct(const TArray<FInventoryItemS
 		ItemToAdd->StackSize = CurItem.ItemStackSize;
 		ItemToAdd->Condition = CurItem.Condition;
 		ItemToAdd->IconTexture = CurItem.TextureIcon;
+		ItemToAdd->ItemMeshID = CurItem.ItemMeshID;
 
 		for (int CurItemToAddToStack = 0; CurItemToAddToStack < FMath::Max(CurItem.Quantity, 1); CurItemToAddToStack++)
 		{

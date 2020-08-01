@@ -47,7 +47,7 @@ void AOWSEnvironmentAbilityActor::PostInitializeComponents()
 	FXOnPeriodicActivation->SetTemplate(ParticleEffectToPlayOnPeriodicActivaion);
 
 	//Only run the timer on the Server
-	if (Role == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		GetWorld()->GetTimerManager().SetTimer(PeriodicAbilityTimer, this, &AOWSEnvironmentAbilityActor::ActivatePeriodicAbility, PeriodLength, true);
 	}
@@ -63,7 +63,7 @@ void AOWSEnvironmentAbilityActor::PostInitializeComponents()
 void AOWSEnvironmentAbilityActor::ActivatePeriodicAbility()
 {
 	//Only run this on the server
-	if (Role != ROLE_Authority)
+	if (GetLocalRole() != ROLE_Authority)
 		return;
 	
 	UE_LOG(OWS, Verbose, TEXT("Server: AOWSEnvironmentAbilityActor - Activate Periodic Ability"));

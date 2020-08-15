@@ -73,14 +73,15 @@ void UOWSAbilityTask_PlayMontageWait::OnMontageEnded(UAnimMontage* Montage, bool
 }
 
 UOWSAbilityTask_PlayMontageWait* UOWSAbilityTask_PlayMontageWait::CreatePlayMontageAndWaitProxy(UGameplayAbility* OwningAbility,
-	FName TaskInstanceName, UAnimMontage *MontageToPlay, float Rate, FName StartSection, bool bStopWhenAbilityEnds, float AnimRootMotionTranslationScale,
-	FName AnimNotifyName)
+	FName TaskInstanceName, UAnimMontage *MontageToPlay, USkeletalMeshComponent* UseAlternateSKMC, float Rate, FName StartSection, 
+	bool bStopWhenAbilityEnds, float AnimRootMotionTranslationScale, FName AnimNotifyName)
 {
 
 	UAbilitySystemGlobals::NonShipping_ApplyGlobalAbilityScaler_Rate(Rate);
 
 	UOWSAbilityTask_PlayMontageWait* MyObj = NewAbilityTask<UOWSAbilityTask_PlayMontageWait>(OwningAbility, TaskInstanceName);
 	MyObj->MontageToPlay = MontageToPlay;
+	MyObj->UseAlternateSKMC = UseAlternateSKMC;
 	MyObj->Rate = Rate;
 	MyObj->StartSection = StartSection;
 	MyObj->AnimRootMotionTranslationScale = AnimRootMotionTranslationScale;
@@ -101,43 +102,58 @@ void UOWSAbilityTask_PlayMontageWait::Activate()
 	if (AbilitySystemComponent)
 	{
 		const FGameplayAbilityActorInfo* ActorInfo = Ability->GetCurrentActorInfo();
-		UAnimInstance* AnimInstance = ActorInfo->GetAnimInstance();
-		if (AnimInstance != nullptr)
-		{
-			if (AbilitySystemComponent->PlayMontage(Ability, Ability->GetCurrentActivationInfo(), MontageToPlay, Rate, StartSection) > 0.f)
+		UAnimInstance* AnimInstance;
+		if (UseAlternateSKMC)
+		{ 
+			AnimInstance = UseAlternateSKMC->GetAnimInstance();
+
+			float Duration = AnimInstance->Montage_Play(MontageToPlay, Rate);
+			if (Duration > 0)
 			{
-				// Playing a montage could potentially fire off a callback into game code which could kill this ability! Early out if we are  pending kill.
-				if (ShouldBroadcastAbilityTaskDelegates() == false)
-				{
-					return;
-				}
-
-				InterruptedHandle = Ability->OnGameplayAbilityCancelled.AddUObject(this, &UOWSAbilityTask_PlayMontageWait::OnMontageInterrupted);
-
-				BlendingOutDelegate.BindUObject(this, &UOWSAbilityTask_PlayMontageWait::OnMontageBlendingOut);
-				AnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDelegate, MontageToPlay);
-
-				MontageEndedDelegate.BindUObject(this, &UOWSAbilityTask_PlayMontageWait::OnMontageEnded);
-				AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MontageToPlay);
-
-				if (WaitForAnimNotifyName != NAME_None)
-				{
-					AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &UOWSAbilityTask_PlayMontageWait::OnOWSNotifyBeginReceived);
-				}
-
-				ACharacter* Character = Cast<ACharacter>(GetAvatarActor());
-				if (Character && (Character->GetLocalRole() == ROLE_Authority ||
-					(Character->GetLocalRole() == ROLE_AutonomousProxy && Ability->GetNetExecutionPolicy() == EGameplayAbilityNetExecutionPolicy::LocalPredicted)))
-				{
-					Character->SetAnimRootMotionTranslationScale(AnimRootMotionTranslationScale);
-				}
-
 				bPlayedMontage = true;
 			}
 		}
 		else
 		{
-			ABILITY_LOG(Warning, TEXT("UAbilityTask_PlayMontageAndWait call to PlayMontage failed!"));
+			AnimInstance = ActorInfo->GetAnimInstance();
+
+			if (AnimInstance != nullptr)
+			{
+				if (AbilitySystemComponent->PlayMontage(Ability, Ability->GetCurrentActivationInfo(), MontageToPlay, Rate, StartSection) > 0.f)
+				{
+					// Playing a montage could potentially fire off a callback into game code which could kill this ability! Early out if we are  pending kill.
+					if (ShouldBroadcastAbilityTaskDelegates() == false)
+					{
+						return;
+					}
+
+					InterruptedHandle = Ability->OnGameplayAbilityCancelled.AddUObject(this, &UOWSAbilityTask_PlayMontageWait::OnMontageInterrupted);
+
+					BlendingOutDelegate.BindUObject(this, &UOWSAbilityTask_PlayMontageWait::OnMontageBlendingOut);
+					AnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDelegate, MontageToPlay);
+
+					MontageEndedDelegate.BindUObject(this, &UOWSAbilityTask_PlayMontageWait::OnMontageEnded);
+					AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MontageToPlay);
+
+					if (WaitForAnimNotifyName != NAME_None)
+					{
+						AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &UOWSAbilityTask_PlayMontageWait::OnOWSNotifyBeginReceived);
+					}
+
+					ACharacter* Character = Cast<ACharacter>(GetAvatarActor());
+					if (Character && (Character->GetLocalRole() == ROLE_Authority ||
+						(Character->GetLocalRole() == ROLE_AutonomousProxy && Ability->GetNetExecutionPolicy() == EGameplayAbilityNetExecutionPolicy::LocalPredicted)))
+					{
+						Character->SetAnimRootMotionTranslationScale(AnimRootMotionTranslationScale);
+					}
+
+					bPlayedMontage = true;
+				}
+			}
+			else
+			{
+				ABILITY_LOG(Warning, TEXT("UAbilityTask_PlayMontageAndWait call to PlayMontage failed!"));
+			}
 		}
 	}
 	else
@@ -190,7 +206,16 @@ void UOWSAbilityTask_PlayMontageWait::OnDestroy(bool AbilityEnded)
 		return;
 	}
 
-	UAnimInstance* AnimInstance = ActorInfo->GetAnimInstance();
+	UAnimInstance* AnimInstance;
+	if (UseAlternateSKMC)
+	{
+		AnimInstance = UseAlternateSKMC->GetAnimInstance();
+	}
+	else
+	{
+		AnimInstance = ActorInfo->GetAnimInstance();
+	}
+
 	if (AnimInstance != nullptr)
 	{
 		AnimInstance->OnPlayMontageNotifyBegin.RemoveDynamic(this, &UOWSAbilityTask_PlayMontageWait::OnOWSNotifyBeginReceived);
@@ -217,7 +242,16 @@ bool UOWSAbilityTask_PlayMontageWait::StopPlayingMontage()
 		return false;
 	}
 
-	UAnimInstance* AnimInstance = ActorInfo->GetAnimInstance();
+	UAnimInstance* AnimInstance;
+	if (UseAlternateSKMC)
+	{
+		AnimInstance = UseAlternateSKMC->GetAnimInstance();
+	}
+	else
+	{
+		AnimInstance = ActorInfo->GetAnimInstance();
+	}
+
 	if (AnimInstance == nullptr)
 	{
 		return false;
@@ -252,7 +286,16 @@ FString UOWSAbilityTask_PlayMontageWait::GetDebugString() const
 	if (Ability)
 	{
 		const FGameplayAbilityActorInfo* ActorInfo = Ability->GetCurrentActorInfo();
-		UAnimInstance* AnimInstance = ActorInfo->GetAnimInstance();
+
+		UAnimInstance* AnimInstance;
+		if (UseAlternateSKMC)
+		{
+			AnimInstance = UseAlternateSKMC->GetAnimInstance();
+		}
+		else
+		{
+			AnimInstance = ActorInfo->GetAnimInstance();
+		}		
 
 		if (AnimInstance != nullptr)
 		{

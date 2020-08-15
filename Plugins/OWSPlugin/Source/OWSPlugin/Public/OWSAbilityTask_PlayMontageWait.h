@@ -48,7 +48,7 @@ class OWSPLUGIN_API UOWSAbilityTask_PlayMontageWait : public UAbilityTask
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (DisplayName = "OWSPlayMontageAndWait",
 		HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
 		static UOWSAbilityTask_PlayMontageWait* CreatePlayMontageAndWaitProxy(UGameplayAbility* OwningAbility,
-			FName TaskInstanceName, UAnimMontage *MontageToPlay, float Rate = 1.f, FName StartSection = NAME_None, bool bStopWhenAbilityEnds = true, float AnimRootMotionTranslationScale = 1.f, 
+			FName TaskInstanceName, UAnimMontage* MontageToPlay, USkeletalMeshComponent* UseAlternateSKMC, float Rate = 1.f, FName StartSection = NAME_None, bool bStopWhenAbilityEnds = true, float AnimRootMotionTranslationScale = 1.f,
 			FName AnimNotifyName = NAME_None);
 
 	virtual void Activate() override;
@@ -72,6 +72,9 @@ private:
 
 	UPROPERTY()
 		UAnimMontage* MontageToPlay;
+
+	UPROPERTY()
+		USkeletalMeshComponent* UseAlternateSKMC;
 
 	UPROPERTY()
 		float Rate;

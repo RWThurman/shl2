@@ -1,6 +1,5 @@
 // Copyright 2020 Sabre Dart Studios
 
-
 #include "IconEffects.h"
 
 // Sets default values for this component's properties
@@ -13,7 +12,6 @@ UIconEffects::UIconEffects()
 	// ...
 }
 
-
 // Called when the game starts
 void UIconEffects::BeginPlay()
 {
@@ -23,7 +21,6 @@ void UIconEffects::BeginPlay()
 	
 }
 
-
 // Called every frame
 void UIconEffects::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -32,3 +29,14 @@ void UIconEffects::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	// ...
 }
 
+void UIconEffects::StartIconEffect(
+	UWidget *targetWidgetPtr,
+	const FString &effectName)
+{
+}
+
+void UIconEffects::StopIconEffect(
+	UWidget* targetWidgetPtr,
+	const FString& effectName)
+{
+}
